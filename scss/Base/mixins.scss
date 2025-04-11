@@ -1,0 +1,21 @@
+@mixin verticalCenter {
+  display: flex;
+  align-items: center;
+}
+
+@mixin horizontalCenter {
+  display: flex;
+  justify-content: center;
+}
+
+@mixin center($alignment: center) {
+  display: flex;
+  justify-content: if($alignment == between, space-between, $alignment);
+  align-items: center;
+}
+
+@mixin flexColumn($padding: 10px) {
+  display: flex;
+  flex-direction: column;
+  padding: $padding;
+}

@@ -1,0 +1,19 @@
+/*Base Folder*/
+@import './Base/reset';
+@import './Base/variables';
+@import './Base/mixins';
+
+/*Components*/
+@import './Components/Navbar';
+@import './Components/Footer';
+@import './Components/Sidebar';
+
+@import './Components/Dashboard/Dashb';
+
+/*Views Folder*/
+@import './Views/home';
+@import './Views/brocanteurs.scss';
+@import './Views/contact.scss';
+@import './Views/Object.scss';
+
+@import './Views/Dashboard/object.inc.scss';

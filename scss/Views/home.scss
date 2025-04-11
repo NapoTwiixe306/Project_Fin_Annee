@@ -1,0 +1,11 @@
+@import '../Base/mixins';
+@import '../Base/variables';
+
+.main {
+  @include center(center);
+  flex-direction: column;
+
+  @import '../Components/Home/HeroBanner';
+  @import '../Components/Home/Proposition';
+  @import '../Components/Home/Tarifs';
+}

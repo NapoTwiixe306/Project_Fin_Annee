@@ -1,0 +1,96 @@
+@import '../Base/variables.scss';
+@import '../Base/mixins.scss';
+
+nav {
+  @include center(between);
+  padding: 10px;
+  position: relative;
+
+  .check-input {
+    display: none;
+  }
+
+  .check-label {
+    cursor: pointer;
+    font-size: 24px;
+    display: none;
+  }
+
+  .logo {
+    font-size: 35px;
+    font-weight: bold;
+    color: black;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+
+    li > a {
+      text-decoration: none;
+      color: black;
+      font-size: 18px;
+      padding: 10px;
+      transition: .3s;
+      &:hover {
+        color: rgb(0, 0, 0);
+      }
+    }
+
+    .register {
+      button {
+        @include verticalCenter;
+        gap: 10px;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background-color: black;
+        color: white;
+        a{
+          color: white;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 890px) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .check-label {
+      display: block;
+      order: 2;
+    }
+
+    .logo {
+      order: 1;
+    }
+
+    ul {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: white;
+      padding: 10px;
+
+      li > a {
+        padding: 10px;
+        color: black;
+      }
+    }
+
+    .check-input:checked ~ ul {
+      display: flex;
+    }
+  }
+}
