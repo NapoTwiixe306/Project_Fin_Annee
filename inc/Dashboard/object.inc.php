@@ -72,9 +72,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 // Récupération des données
 $categories = getCategories($pdo);
-$stmt = $pdo->prepare("SELECT * FROM objets WHERE brocanteur_id = ? ORDER BY created_at DESC");
-$stmt->execute([$brocanteur_id]);
-$objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
@@ -111,23 +108,6 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </select>
         <button type="submit" name="ajouter">Ajouter</button>
     </form>
-
-    <h2>Mes objets</h2>
-    <ul class="objets-liste">
-        <?php foreach ($objets as $objet): ?>
-            <li class="objet-item">
-                <div class="objet-details">
-                    <h3><?= htmlspecialchars($objet['titre']) ?></h3>
-                    <p><?= htmlspecialchars($objet['description']) ?></p>
-                    <span class="categorie">Catégorie : <?= htmlspecialchars($objet['categorie']) ?></span>
-                </div>
-                <form action="" method="POST" class="supprimer-form">
-                    <input type="hidden" name="objet_id" value="<?= $objet['id'] ?>">
-                    <button type="submit" name="supprimer" class="supprimer-btn">Supprimer</button>
-                </form>
-            </li>
-        <?php endforeach; ?>
-    </ul>
 </div>
 <style>
     .objets-liste {

@@ -10,6 +10,7 @@
         <li><a href="?page=accueil">Accueil</a></li>
         <li><a href="?page=dashboard">Dashboard</a></li>
         <li><a href="?page=modifier">Modifier un objet</a></li>
+        <li><a href="?page=objet">Afficher</a></li>
         <li><a href="?page=settings">Settings</a></li>
     </ul>
     <ul>

@@ -11,6 +11,9 @@ switch ($page) {
     case 'modifier':
         $content = __DIR__ . '/Dashboard/object.inc.php';
         break;
+    case 'objet':
+        $content = __DIR__ . '/Dashboard/displayObject.inc.php';
+        break;
     case 'settings':
         $content = __DIR__ . '/Dashboard/settings.inc.php';
         break;
