@@ -1,3 +1,12 @@
+
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$isLoggedIn = isset($_SESSION['brocanteur_id']); 
+?>
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -17,11 +26,19 @@
         <li><a href="./objet.php">En Vente</a></li>
         <li><a href="./contact.php">Contact</a></li>
         <li class="register">
-            <button>
-                <a href="./connexion.php">Connexion</a>
-                <img src="../img/svg/right-arrow.svg" alt="Flèche droite" class="arrow-icon">
-            </button>
+            <?php if ($isLoggedIn): ?>
+                <button>
+                    <a href="./brocanteurs_login.php">Dashboard</a>
+                    <img src="../img/svg/right-arrow.svg" alt="Flèche droite" class="arrow-icon">
+                </button>
+            <?php else: ?>
+                <button>
+                    <a href="./connexion.php">Connexion</a>
+                    <img src="../img/svg/right-arrow.svg" alt="Flèche droite" class="arrow-icon">
+                </button>
+            <?php endif; ?>
         </li>
+
     </ul>
 </nav>
 </body>

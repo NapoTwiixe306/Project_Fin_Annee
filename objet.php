@@ -7,10 +7,8 @@ global $pdo;
 require_once __DIR__ . "/inc/config.php";
 require_once __DIR__ . "/bdd.php";
 
-// Initialisation de la variable $search si le formulaire est soumis
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
-// Récupérer les objets depuis la base de données avec filtrage basé sur la recherche
 $sql = "SELECT objets.id, objets.titre, objets.description, categories.nom AS categorie, 
                brocanteurs.nom AS brocanteur_nom, brocanteurs.prenom AS brocanteur_prenom
         FROM objets
@@ -20,7 +18,7 @@ $sql = "SELECT objets.id, objets.titre, objets.description, categories.nom AS ca
         ORDER BY objets.created_at DESC";
 
 $stmt = $pdo->prepare($sql);
-$stmt->bindValue(':search', '%' . $search . '%'); // Recherche partielle dans le titre et la catégorie
+$stmt->bindValue(':search', '%' . $search . '%');
 $stmt->execute();
 $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -58,24 +56,36 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($objets as $objet): ?>
                 <article class="card">
                     <section class="infos">
-                        <img src=https://placehold.jp/50x50.png/<?= $objet['brocanteur_nom'][0] ?>" alt="" width="50" height="50"/>
+                        <img src="https://placehold.jp/50x50.png/<?= htmlspecialchars(strtolower($objet['brocanteur_nom'][0])) ?>" alt="" width="50" height="50"/>
                         <div class="text">
                             <p class="title"><?= htmlspecialchars($objet['brocanteur_prenom'] . " " . $objet['brocanteur_nom']) ?></p>
                             <p><?= htmlspecialchars($objet['categorie']) ?></p>
                         </div>
                     </section>
-                    <section class="badge">
-                    </section>
                     <section class="description">
                         <h3><?= htmlspecialchars($objet['titre']) ?></h3>
-                        <p><?= htmlspecialchars($objet['description']) ?></p>
+                        <p><?= htmlspecialchars(substr($objet['description'], 0, 60)) ?>...</p>
                     </section>
                     <section class="button">
-                        <button>Voir les détails</button>
+                        <a href="#objet-<?= $objet['id'] ?>">Voir les détails</a>
                     </section>
                 </article>
             <?php endforeach; ?>
         </section>
+
+        <!-- MODALS -->
+        <?php foreach ($objets as $objet): ?>
+            <div id="objet-<?= $objet['id'] ?>" class="modal">
+                <div class="modal-content">
+                    <h2><?= htmlspecialchars($objet['titre']) ?></h2>
+                    <p><strong>Catégorie :</strong> <?= htmlspecialchars($objet['categorie']) ?></p>
+                    <p><strong>Vendeur :</strong> <?= htmlspecialchars($objet['brocanteur_prenom'] . " " . $objet['brocanteur_nom']) ?></p>
+                    <p><strong>Description complète :</strong></p>
+                    <p><?= nl2br(htmlspecialchars($objet['description'])) ?></p>
+                    <a href="#" class="close">Fermer</a>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </section>
 </main>
 

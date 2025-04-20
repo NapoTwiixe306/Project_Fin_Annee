@@ -1,3 +1,23 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+global $pdo;
+require_once __DIR__ . "/inc/config.php";
+require_once __DIR__ . "/bdd.php";
+
+// Récupérer les 3 premiers objets
+$sql = "SELECT objets.id, objets.titre, objets.description 
+        FROM objets
+        ORDER BY objets.created_at DESC
+        LIMIT 3";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -13,7 +33,7 @@
     <main class="main">
         <section class="hero_banner">
             <article class="left">
-                <h2>Plongez dans l'univers du violon à la foire aux puces dédiée aux classique</h2>
+                <h2>Plongez dans l'univers du violon à la foire aux puces dédiée aux classiques</h2>
                 <p>La foire <strong>"Échos de Violon"</strong> est l’événement idéal pour les passionnés de musique classique et les amoureux du violon. Rejoignez-nous pour découvrir des instruments raffinés, des partitions rares, des accessoires de musique, et des objets de collection uniques liés au monde du violon. Que vous soyez un musicien en herbe, un collectionneur ou simplement curieux, vous trouverez des trésors qui raviront vos sens !</p>
             </article>
             <article class="right">
@@ -33,32 +53,22 @@
                 </section>
             </article>
         </section>
+
+        <!-- Section Proposition -->
         <section class="proposition">
             <h2>Ce qu'ils vendent</h2>
-           <section class="images">
-               <article class="card">
-                    <h2>Objet 1</h2>
-                    <p>20€</p>
-                    <img src="https://placehold.co/300x200" alt="">
-                    <p class="description">Description courte de l'objet 1</p>
-                    <button>Voir les détails</button>
-               </article>
-               <article class="card">
-                    <h2>Objet 1</h2>
-                    <p>20€</p>
-                    <img src="https://placehold.co/300x200" alt="">
-                    <p class="description">Description courte de l'objet 1</p>
-                    <button>Voir les détails</button>
-               </article>
-               <article class="card">
-                    <h2>Objet 1</h2>
-                    <p>20€</p>
-                    <img src="https://placehold.co/300x200" alt="">
-                    <p class="description">Description courte de l'objet 1</p>
-                    <button>Voir les détails</button>
-               </article>
-           </section>
+            <section class="images">
+                <?php foreach ($objets as $objet): ?>
+                    <article class="card">
+                        <h2><?= htmlspecialchars($objet['titre']) ?></h2>
+                        <img src="https://placehold.co/300x200" alt="">
+                        <p class="description"><?= htmlspecialchars(substr($objet['description'], 0, 60)) ?>...</p>
+                        <button>Voir les détails</button>
+                    </article>
+                <?php endforeach; ?>
+            </section>
         </section>
+
         <section class="tarifs">
             <section class="cards">
                 <article class="card">
@@ -99,7 +109,7 @@
                         </li>
                         <li>
                             <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Emplacement privilégié pour une visiblité optimal.
+                            Emplacement privilégié pour une visiblité optimale.
                         </li>
                         <li>
                             <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
@@ -111,7 +121,7 @@
                 <article class="card">
                     <section class="info">
                         <h3>Grand Stand</h3>
-                        <p class="price">249.99 € <span class="description">l'emplacement</span></p>
+                        <p class="price">249,99 € <span class="description">l'emplacement</span></p>
                         <button>Réservez votre stand maintenant</button>
                     </section>
 
