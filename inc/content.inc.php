@@ -5,9 +5,6 @@ switch ($page) {
     case 'accueil':
         $content = __DIR__ . '/Dashboard/home.inc.php';
         break;
-    case 'dashboard':
-        $content = 'Bienvenue dans le dashboard.';
-        break;
     case 'modifier':
         $content = __DIR__ . '/Dashboard/object.inc.php';
         break;

@@ -53,6 +53,7 @@
         border-radius: 5px;
         background: none;
         cursor: pointer;
+        color: black;
         font-size: 1rem;
         transition: background-color 0.2s, color 0.2s;
         align-self: center;
@@ -135,6 +136,8 @@
       button {
         font-size: 0.9rem;
         padding: 8px 10px;
+        color: black;
+
       }
     }
   }
@@ -172,6 +175,7 @@
       button {
         font-size: 0.8rem;
         padding: 6px 8px;
+        color: black;
       }
     }
   }

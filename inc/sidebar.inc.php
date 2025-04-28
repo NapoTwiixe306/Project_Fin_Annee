@@ -11,7 +11,7 @@ $nom = $email = '';
 
 if (isset($_SESSION['brocanteur_id'])) {
     $id = $_SESSION['brocanteur_id'];
-    $stmt = $pdo->prepare("SELECT nom, prenom FROM brocanteurs WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT nom, prenom, photo_profil FROM brocanteurs WHERE id = ?");
     $stmt->execute([$id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -23,15 +23,14 @@ if (isset($_SESSION['brocanteur_id'])) {
 
 <aside class="sidebar">
     <section class="info">
-        <article class="avatar"></article>
+        
         <article>
             <h1><?= $nom ?></h1>
         </article>
     </section>
     <ul>
         <li><a href="/">Accueil</a></li>
-        <li><a href="?page=dashboard">Dashboard</a></li>
-        <li><a href="?page=modifier">Modifier un objet</a></li>
+        <li><a href="?page=modifier">Ajouter un objet</a></li>
         <li><a href="?page=objet">Afficher</a></li>
         <li><a href="?page=settings">Settings</a></li>
     </ul>
@@ -43,4 +42,3 @@ if (isset($_SESSION['brocanteur_id'])) {
         </li>
     </ul>
 </aside>
-

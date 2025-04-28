@@ -1,4 +1,4 @@
-<?php
+xa<?php
 global $pdo;
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -41,6 +41,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 }
+// Traitement de la suppression
+if (isset($_POST['supprimer'])) {
+    $objet_id = intval($_POST['objet_id'] ?? 0);
+
+    // Vérifie que l'objet appartient bien au brocanteur connecté
+    $stmt = $pdo->prepare("DELETE FROM objets WHERE id = ? AND brocanteur_id = ?");
+    $stmt->execute([$objet_id, $brocanteur_id]);
+
+    if ($stmt->rowCount() > 0) {
+        $success = "Objet supprimé avec succès.";
+    } else {
+        $error = "Échec de la suppression de l'objet.";
+    }
+}
+
 
 // Récupérer les objets après modification
 $stmt = $pdo->prepare("SELECT * FROM objets WHERE brocanteur_id = ? ORDER BY created_at DESC");
