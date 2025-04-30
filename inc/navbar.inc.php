@@ -29,13 +29,13 @@ $isLoggedIn = isset($_SESSION['brocanteur_id']);
             <?php if ($isLoggedIn): ?>
                 <button>
                     <a href="./brocanteurs_login.php">Dashboard</a>
-                    <img src="../img/svg/right-arrow.svg" alt="Flèche droite" class="arrow-icon">
+                    <img src="./public/right-arrow.png" alt="Flèche droite" class="arrow-icon">
                 </button>
             <?php else: ?>
                 <button>
                     <a href="./connexion.php">Connexion</a>
-                    <img src="../img/svg/right-arrow.svg" alt="Flèche droite" class="arrow-icon">
-                </button>
+                    <img src="./public/right-arrow.png" alt="Flèche droite" style="width: 24px; height: 25px;">
+                    </button>
             <?php endif; ?>
         </li>
 

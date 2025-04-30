@@ -78,6 +78,10 @@ nav ul .register button {
 nav ul .register button a {
   color: white;
 }
+nav ul .register button img .arrow-icon {
+  width: 24px;
+  height: 25px;
+}
 @media (max-width: 890px) {
   nav {
     display: flex;
