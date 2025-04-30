@@ -75,12 +75,12 @@ nav ul .register button {
   background-color: black;
   color: white;
 }
-nav ul .register button a {
-  color: white;
-}
 nav ul .register button img .arrow-icon {
   width: 24px;
   height: 25px;
+}
+nav ul .register button a {
+  color: white;
 }
 @media (max-width: 890px) {
   nav {
