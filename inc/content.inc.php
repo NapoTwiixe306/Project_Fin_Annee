@@ -14,6 +14,9 @@ switch ($page) {
     case 'settings':
         $content = __DIR__ . '/Dashboard/settings.inc.php';
         break;
+    case 'admin':
+        $content = __DIR__ . '/Dashboard/admin.inc.php';
+        break;
     default:
         $content = 'Page non trouvée.';
         break;
