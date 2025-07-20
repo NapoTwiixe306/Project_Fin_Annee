@@ -1,5 +1,5 @@
 <?php
-$page = isset($_GET['page']) ? $_GET['page'] : 'accueil';
+$page = isset($_GET['page']) ? $_GET['page'] : 'modifier';
 
 switch ($page) {
     case 'accueil':

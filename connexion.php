@@ -1,32 +1,27 @@
 <?php
-global $pdo;
-session_start();
-require_once 'bdd.php';
+require_once 'src/autoload.php';
+use Controllers\BrocanteurController;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+$controller = new BrocanteurController();
+$result = $controller->login();
 
-    if (empty($email) || empty($password)) {
-        die("Email et mot de passe requis.");
-    }
-
-    // Récupération de l'utilisateur
-    $stmt = $pdo->prepare("SELECT id, password_hash FROM brocanteurs WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password_hash'])) {
-        $_SESSION['brocanteur_id'] = $user['id'];
-        header("Location: brocanteurs_login.php");
-        exit();
-    } else {
-        echo "Identifiants incorrects.";
-    }
+if ($result['success']) {
+    header("Location: brocanteurs_login.php");
+    exit();
 }
+
+$errors = $result['errors'];
 ?>
 
 <section>
+    <?php if (!empty($errors)): ?>
+        <div class="errors">
+            <?php foreach ($errors as $error): ?>
+                <p style="color: red;"><?= htmlspecialchars($error) ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+    
     <form method="POST">
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="password" placeholder="Mot de passe" required>

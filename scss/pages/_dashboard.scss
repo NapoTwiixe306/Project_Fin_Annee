@@ -1,0 +1,341 @@
+// ========================================
+// PAGES - DASHBOARD SPÉCIFIQUE
+// ========================================
+
+@use '../abstracts' as *;
+
+// === PAGE MES OBJETS ===
+.mes-objets {
+  .page-title {
+    margin-bottom: $spacing-8;
+  }
+  
+  .success,
+  .error {
+    font-weight: $font-weight-medium;
+  }
+  
+  .success {
+    background: linear-gradient(135deg, rgba($color-success, 0.1), $color-white);
+    color: darken-color($color-success, 25%);
+    padding: $spacing-4 $spacing-6;
+    border-radius: $radius-xl;
+    margin-bottom: $spacing-6;
+    border-left: 0.25rem solid $color-success;
+    @include flex-center;
+    justify-content: flex-start;
+    gap: $spacing-3;
+    
+    &::before {
+      content: '✅';
+      font-size: $font-size-lg;
+    }
+  }
+  
+  .error {
+    background: linear-gradient(135deg, rgba($color-danger, 0.1), $color-white);
+    color: darken-color($color-danger, 25%);
+    padding: $spacing-4 $spacing-6;
+    border-radius: $radius-xl;
+    margin-bottom: $spacing-6;
+    border-left: 0.25rem solid $color-danger;
+    @include flex-center;
+    justify-content: flex-start;
+    gap: $spacing-3;
+    
+    &::before {
+      content: '❌';
+      font-size: $font-size-lg;
+    }
+  }
+}
+
+// === PAGE HOME DASHBOARD ===
+.dashboard-home {
+  .user-welcome {
+    @include card-base;
+    padding: $spacing-8;
+    margin-bottom: $spacing-8;
+    background: linear-gradient(135deg, rgba($color-primary, 0.05), $color-white);
+    border-left: 0.25rem solid $color-primary;
+    
+    h1 {
+      color: $color-primary;
+      margin-bottom: $spacing-4;
+      font-size: $font-size-2xl;
+      
+      @include mobile-only {
+        font-size: $font-size-xl;
+      }
+    }
+    
+    p {
+      color: $color-dark;
+      font-size: $font-size-lg;
+      margin: 0;
+      
+      @include mobile-only {
+        font-size: $font-size-base;
+      }
+    }
+  }
+  
+  .status-section {
+    @include card-base;
+    padding: $spacing-6;
+    margin-bottom: $spacing-8;
+    
+    h2 {
+      color: $color-primary;
+      font-size: $font-size-xl;
+      margin-bottom: $spacing-4;
+    }
+    
+    .status-assigned {
+      color: $color-success;
+      @include flex-center;
+      justify-content: flex-start;
+      gap: $spacing-2;
+      font-weight: $font-weight-semibold;
+      
+      &::before {
+        content: '✅';
+      }
+    }
+    
+    .status-pending {
+      color: $color-warning;
+      @include flex-center;
+      justify-content: flex-start;
+      gap: $spacing-2;
+      font-weight: $font-weight-semibold;
+      
+      &::before {
+        content: '⏳';
+      }
+    }
+  }
+  
+  .quick-actions {
+    @include card-base;
+    padding: $spacing-6;
+    
+    h2 {
+      color: $color-primary;
+      font-size: $font-size-xl;
+      margin-bottom: $spacing-4;
+    }
+    
+    ul {
+      @include list-reset;
+      @include flex-wrap;
+      gap: $spacing-3;
+      
+      @include mobile-only {
+        flex-direction: column;
+      }
+    }
+    
+    li {
+      flex: 1;
+      min-width: 12rem; // 192px
+      
+      @include mobile-only {
+        min-width: auto;
+      }
+    }
+    
+    a {
+      @include flex-center;
+      padding: $spacing-4;
+      background: linear-gradient(135deg, $color-secondary, lighten-color($color-secondary, 5%));
+      color: $color-white;
+      text-decoration: none;
+      border-radius: $radius-xl;
+      font-weight: $font-weight-semibold;
+      @include transition();
+      @include shadow('sm');
+      
+      &:hover,
+      &:focus {
+        @include shadow('md');
+        @include hover-lift();
+        transform: translateY(-0.125rem) scale(1.02);
+      }
+    }
+  }
+}
+
+// === FORMULAIRES DASHBOARD ===
+.dashboard-form {
+  .form-group {
+    margin-bottom: $spacing-6;
+    
+    label {
+      display: block;
+      margin-bottom: $spacing-2;
+      font-weight: $font-weight-semibold;
+      color: $color-primary;
+      font-size: $font-size-sm;
+    }
+    
+    input[type="text"],
+    input[type="file"],
+    textarea,
+    select {
+      width: 100%;
+      padding: $spacing-3;
+      border: 0.125rem solid $color-light;
+      border-radius: $radius-lg;
+      font-size: $font-size-base;
+      font-family: inherit;
+      @include transition();
+      background: $color-white;
+      
+      &:focus {
+        border-color: $color-secondary;
+        box-shadow: 0 0 0 3px rgba($color-secondary, 0.1);
+        outline: none;
+      }
+      
+      &:hover {
+        border-color: $color-medium;
+      }
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 7.5rem; // 120px
+    }
+    
+    input[type="file"] {
+      padding: $spacing-3;
+      background: $color-light;
+      border: 0.125rem dashed $color-medium;
+      cursor: pointer;
+      
+      &:hover {
+        background: lighten-color($color-light, 2%);
+      }
+    }
+    
+    select {
+      cursor: pointer;
+    }
+  }
+  
+  .form-actions {
+    @include flex-wrap;
+    gap: $spacing-4;
+    justify-content: flex-end;
+    margin-top: $spacing-8;
+    padding-top: $spacing-6;
+    border-top: 0.0625rem solid $color-light;
+    
+    @include mobile-only {
+      flex-direction: column;
+      
+      .btn {
+        width: 100%;
+      }
+    }
+    
+    .btn {
+      padding: $spacing-3 $spacing-8;
+      border: none;
+      border-radius: $radius-lg;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-base;
+      cursor: pointer;
+      @include transition();
+      text-decoration: none;
+      @include flex-center;
+      min-width: 7.5rem; // 120px
+      
+      &.btn-primary {
+        background: linear-gradient(135deg, $color-secondary, darken-color($color-secondary, 5%));
+        color: $color-white;
+        
+        &:hover {
+          background: linear-gradient(135deg, darken-color($color-secondary, 5%), darken-color($color-secondary, 10%));
+          @include hover-lift();
+          @include shadow('md');
+        }
+      }
+      
+      &.btn-secondary {
+        background: $color-medium;
+        color: $color-white;
+        
+        &:hover {
+          background: darken-color($color-medium, 10%);
+          @include hover-lift();
+        }
+      }
+    }
+  }
+  
+  .error-messages {
+    margin-bottom: $spacing-6;
+    
+    .error {
+      background: linear-gradient(135deg, rgba($color-danger, 0.1), $color-white);
+      color: darken-color($color-danger, 25%);
+      padding: $spacing-4 $spacing-6;
+      border-radius: $radius-lg;
+      margin-bottom: $spacing-2;
+      border-left: 0.25rem solid $color-danger;
+      @include flex-center;
+      justify-content: flex-start;
+      gap: $spacing-3;
+      font-weight: $font-weight-medium;
+      
+      &::before {
+        content: '❌';
+        font-size: $font-size-sm;
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  .current-image {
+    margin-top: $spacing-4;
+    padding: $spacing-4;
+    background: $color-light;
+    border-radius: $radius-lg;
+    text-align: center;
+    
+    img {
+      border-radius: $radius-md;
+      @include shadow();
+      max-width: 100%;
+      height: auto;
+    }
+    
+    p {
+      margin-top: $spacing-3;
+      color: $color-dark;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      margin-bottom: 0;
+    }
+  }
+}
+
+// === RESPONSIVE OPTIMIZATIONS ===
+@include mobile-only {
+  .dashboard-home {
+    .quick-actions ul {
+      gap: $spacing-2;
+    }
+  }
+  
+  .dashboard-form {
+    .form-actions {
+      gap: $spacing-3;
+    }
+  }
+}

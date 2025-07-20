@@ -1,3 +1,5 @@
+USE Q240237;
+
 -- Table des zones géographiques
 CREATE TABLE IF NOT EXISTS zones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -23,9 +25,11 @@ CREATE TABLE IF NOT EXISTS brocanteurs (
     visible BOOLEAN DEFAULT TRUE,
     role ENUM('brocanteur', 'admin') DEFAULT 'brocanteur',
     emplacement_id INT NULL,
+    photo_profil VARCHAR(255) NULL, -- <<< ajout ici pour stocker la photo
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (emplacement_id) REFERENCES emplacements(id) ON DELETE SET NULL
 );
+
 
 -- Table des administrateurs
 CREATE TABLE IF NOT EXISTS administrateurs (
@@ -46,13 +50,12 @@ CREATE TABLE IF NOT EXISTS objets (
     brocanteur_id INT NOT NULL,
     titre VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
+    photo_objet VARCHAR(255) NULL,
     categorie_id INT NOT NULL,  -- Assurez-vous que cette colonne existe bien
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (brocanteur_id) REFERENCES brocanteurs(id) ON DELETE CASCADE,
     FOREIGN KEY (categorie_id) REFERENCES categories(id) ON DELETE CASCADE  -- C'est bien categorie_id et non categorie
 );
-
-
 
 -- Table des demandes d'inscription
 CREATE TABLE IF NOT EXISTS inscriptions (
@@ -82,3 +85,5 @@ CREATE TABLE IF NOT EXISTS historique_admin (
     FOREIGN KEY (admin_id) REFERENCES administrateurs(id) ON DELETE CASCADE
 );
 
+ALTER TABLE objets ADD COLUMN photo_objet VARCHAR(255) DEFAULT NULL;
+ALTER TABLE objets DROP COLUMN categorie;

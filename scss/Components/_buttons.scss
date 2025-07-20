@@ -1,0 +1,300 @@
+// ========================================
+// BUTTONS - SYSTÈME DE BOUTONS
+// ========================================
+
+@use '../abstracts' as *;
+
+// === BOUTONS DE BASE ===
+.btn {
+  @include button-base;
+  
+  // Tailles de bouton
+  &--sm {
+    padding: $spacing-2 $spacing-4;
+    font-size: $font-size-sm;
+  }
+  
+  &--md {
+    padding: $spacing-3 $spacing-6;
+    font-size: $font-size-base;
+  }
+  
+  &--lg {
+    padding: $spacing-4 $spacing-8;
+    font-size: $font-size-lg;
+  }
+  
+  &--xl {
+    padding: $spacing-5 $spacing-10;
+    font-size: $font-size-xl;
+  }
+  
+  // Largeur complète
+  &--full {
+    width: 100%;
+  }
+}
+
+// === VARIANTES DE COULEUR ===
+// Bouton primaire
+.btn-primary {
+  @include button-variant($color-primary);
+}
+
+// Bouton secondaire
+.btn-secondary {
+  @include button-variant($color-secondary);
+}
+
+// Bouton de succès
+.btn-success {
+  @include button-variant($color-success);
+}
+
+// Bouton d'avertissement
+.btn-warning {
+  @include button-variant($color-warning, $color-black);
+}
+
+// Bouton de danger
+.btn-danger {
+  @include button-variant($color-danger);
+}
+
+// Bouton neutre
+.btn-light {
+  @include button-variant($color-light, $color-black, $color-medium);
+}
+
+.btn-dark {
+  @include button-variant($color-dark);
+}
+
+// === BOUTONS OUTLINE ===
+.btn-outline-primary {
+  @include button-outline($color-primary);
+}
+
+.btn-outline-secondary {
+  @include button-outline($color-secondary);
+}
+
+.btn-outline-success {
+  @include button-outline($color-success);
+}
+
+.btn-outline-warning {
+  @include button-outline($color-warning, $color-warning, $color-warning);
+}
+
+.btn-outline-danger {
+  @include button-outline($color-danger);
+}
+
+.btn-outline-dark {
+  @include button-outline($color-dark);
+}
+
+// === BOUTONS TEXTE ===
+.btn-text {
+  @include button-base;
+  background: transparent;
+  color: $color-secondary;
+  padding: $spacing-2 $spacing-3;
+  
+  &:hover {
+    background-color: rgba($color-secondary, 0.1);
+    color: darken-color($color-secondary, 10%);
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 3px rgba($color-secondary, 0.2);
+  }
+}
+
+// === BOUTONS AVEC ICÔNES ===
+.btn-icon {
+  @include flex-center;
+  gap: $spacing-2;
+  
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    
+    &--left {
+      order: -1;
+    }
+    
+    &--right {
+      order: 1;
+    }
+  }
+}
+
+// Bouton icon-only
+.btn-icon-only {
+  padding: $spacing-3;
+  aspect-ratio: 1;
+  
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  &.btn--sm {
+    padding: $spacing-2;
+    
+    .icon {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+  
+  &.btn--lg {
+    padding: $spacing-4;
+    
+    .icon {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+}
+
+// === BOUTONS FLOTTANTS ===
+.btn-floating {
+  position: fixed;
+  bottom: $spacing-6;
+  right: $spacing-6;
+  z-index: z('fixed');
+  border-radius: $radius-full;
+  width: 3.5rem;
+  height: 3.5rem;
+  @include shadow('lg');
+  
+  &:hover {
+    @include shadow('xl');
+  }
+  
+  @include mobile-only {
+    bottom: $spacing-4;
+    right: $spacing-4;
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+// === GROUPE DE BOUTONS ===
+.btn-group {
+  @include flex-wrap;
+  gap: $spacing-2;
+  
+  &--connected {
+    gap: 0;
+    
+    .btn {
+      border-radius: 0;
+      border-right-width: 0;
+      
+      &:first-child {
+        border-top-left-radius: $radius-lg;
+        border-bottom-left-radius: $radius-lg;
+      }
+      
+      &:last-child {
+        border-top-right-radius: $radius-lg;
+        border-bottom-right-radius: $radius-lg;
+        border-right-width: 0.0625rem;
+      }
+    }
+  }
+  
+  &--vertical {
+    flex-direction: column;
+    
+    &.btn-group--connected {
+      .btn {
+        border-radius: 0;
+        border-bottom-width: 0;
+        border-right-width: 0.0625rem;
+        
+        &:first-child {
+          border-top-left-radius: $radius-lg;
+          border-top-right-radius: $radius-lg;
+          border-bottom-left-radius: 0;
+        }
+        
+        &:last-child {
+          border-bottom-left-radius: $radius-lg;
+          border-bottom-right-radius: $radius-lg;
+          border-top-right-radius: 0;
+          border-bottom-width: 0.0625rem;
+        }
+      }
+    }
+  }
+}
+
+// === ÉTATS DES BOUTONS ===
+.btn {
+  // État de chargement
+  &--loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1rem;
+      height: 1rem;
+      border: 0.125rem solid currentColor;
+      border-top-color: transparent;
+      border-radius: $radius-full;
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  // État actif
+  &--active {
+    background-color: darken-color($color-primary, 10%);
+    @include shadow('md');
+  }
+}
+
+// Animation de rotation pour le loader
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+// === RESPONSIVE ===
+@include mobile-only {
+  .btn-group {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+// === ACCESSIBILITÉ ===
+.btn:focus-visible {
+  outline: 0.125rem solid $color-secondary;
+  outline-offset: 0.125rem;
+}
+
+// Réduction des mouvements
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+  
+  .btn--loading::after {
+    animation: none;
+  }
+}

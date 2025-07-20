@@ -7,15 +7,22 @@ global $pdo;
 require_once __DIR__ . "/inc/config.php";
 require_once __DIR__ . "/bdd.php";
 
-// Récupérer les 3 premiers objets
-$sql = "SELECT objets.id, objets.titre, objets.description 
-        FROM objets
-        ORDER BY objets.created_at DESC
-        LIMIT 3";
-
+// Étape 1 : Récupérer 3 IDs aléatoires d'objets
+$sql = "SELECT id FROM objets ORDER BY RAND() LIMIT 3";
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
-$objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Étape 2 : Récupérer les objets complets correspondant à ces IDs
+if (count($ids) > 0) {
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $sql = "SELECT id, titre, description, photo_objet FROM objets WHERE id IN ($placeholders)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($ids);
+    $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $objets = [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +68,11 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php foreach ($objets as $objet): ?>
                     <article class="card">
                         <h2><?= htmlspecialchars($objet['titre']) ?></h2>
-                        <img src="https://placehold.co/300x200" alt="">
+                        <?php if (!empty($objet['photo_objet']) && file_exists($objet['photo_objet'])): ?>
+                            <img src="<?= htmlspecialchars($objet['photo_objet']) ?>" alt="Image de l'objet" width="300" height="200">
+                        <?php else: ?>
+                            <img src="https://placehold.co/300x200?text=Aucune+image" alt="Image par défaut" width="300" height="200">
+                        <?php endif; ?>
                         <p class="description"><?= htmlspecialchars(substr($objet['description'], 0, 60)) ?>...</p>
                         <button>Voir les détails</button>
                     </article>
@@ -69,8 +80,10 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </section>
         </section>
 
+        <!-- Section Tarifs -->
         <section class="tarifs">
             <section class="cards">
+                <!-- Petit Stand -->
                 <article class="card">
                    <section class="info">
                        <h3>Petit Stand</h3>
@@ -78,21 +91,13 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                        <button>Réservez votre stand maintenant</button>
                    </section>
                     <ul>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Exposez 3 articles et gardez 100% de vos ventes.
-                        </li>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Idéal pour commencer.
-                        </li>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Accès rapide au marché local.
-                        </li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Exposez 3 articles et gardez 100% de vos ventes.</li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Idéal pour commencer.</li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Accès rapide au marché local.</li>
                     </ul>
                 </article>
 
+                <!-- Stand Moyen -->
                 <article class="card">
                     <section class="info">
                         <section class="populaire">
@@ -103,41 +108,23 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <button>Réservez votre stand maintenant</button>
                     </section>
                     <ul>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Exposez jusqu'à 7 articles pour maximiser vos ventes.
-                        </li>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Emplacement privilégié pour une visiblité optimale.
-                        </li>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Accès à une zone de déballage plus proche.
-                        </li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Exposez jusqu'à 7 articles pour maximiser vos ventes.</li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Emplacement privilégié pour une visiblité optimale.</li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Accès à une zone de déballage plus proche.</li>
                     </ul>
                 </article>
 
+                <!-- Grand Stand -->
                 <article class="card">
                     <section class="info">
                         <h3>Grand Stand</h3>
                         <p class="price">249,99 € <span class="description">l'emplacement</span></p>
                         <button>Réservez votre stand maintenant</button>
                     </section>
-
                     <ul>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Exposez autant d'articles que vous le souhaitez pour un impact maximum.
-                        </li>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Emplacement VIP: Vues directes pour tous les visiteurs.
-                        </li>
-                        <li>
-                            <img src="img/svg/check.svg" alt="Vérifié" class="check-icon">
-                            Installation prioritaire pour éviter les foules.
-                        </li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Exposez autant d'articles que vous le souhaitez pour un impact maximum.</li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Emplacement VIP: Vues directes pour tous les visiteurs.</li>
+                        <li><img src="img/svg/check.svg" alt="Vérifié" class="check-icon">Installation prioritaire pour éviter les foules.</li>
                     </ul>
                 </article>
             </section>

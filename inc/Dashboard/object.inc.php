@@ -1,150 +1,249 @@
 <?php
-global $pdo;
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../src/autoload.php';
+use Controllers\ObjetController;
 
-require_once __DIR__ . '/../config.php';
-require_once 'bdd.php';
+$controller = new ObjetController();
 
-if (empty($_SESSION['brocanteur_id'])) {
-    header("Location: login.php");
-    exit();
-}
+// Get the action from URL parameters
+$action = $_GET['action'] ?? 'list';
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-$brocanteur_id = $_SESSION['brocanteur_id'];
-$error = "";
-$success = "";
+$data = [];
+$formData = [
+    'titre' => '',
+    'description' => '',
+    'categorie_id' => 0
+];
 
-// Fonction pour récupérer les catégories
-function getCategories(PDO $pdo): array {
-    $stmt = $pdo->query("SELECT id, nom FROM categories ORDER BY nom ASC");
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Fonction pour ajouter un objet
-function ajouterObjet(PDO $pdo, int $brocanteur_id, string $titre, string $description, int $categorie_id): string {
-    // Vérifie que la catégorie existe
-    $stmt = $pdo->prepare("SELECT nom FROM categories WHERE id = ?");
-    $stmt->execute([$categorie_id]);
-    $nom_categorie = $stmt->fetchColumn();
-
-    if (!$nom_categorie) {
-        return "La catégorie sélectionnée n'existe pas.";
-    }
-
-    // Insertion de l'objet
-    $sql = "INSERT INTO objets (brocanteur_id, titre, description, categorie, categorie_id, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())";
-    $stmt = $pdo->prepare($sql);
-    $success = $stmt->execute([$brocanteur_id, $titre, $description, $nom_categorie, $categorie_id]);
-
-    return $success ? "Objet ajouté avec succès." : "Erreur lors de l'ajout de l'objet.";
-}
-
-// Fonction pour supprimer un objet
-function supprimerObjet(PDO $pdo, int $objet_id, int $brocanteur_id): string {
-    $stmt = $pdo->prepare("DELETE FROM objets WHERE id = ? AND brocanteur_id = ?");
-    return $stmt->execute([$objet_id, $brocanteur_id])
-        ? "Objet supprimé avec succès."
-        : "Erreur lors de la suppression de l'objet.";
-}
-
-// Traitement du formulaire
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    if (isset($_POST['ajouter'])) {
-        $titre = trim($_POST['titre'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $categorie_id = intval($_POST['categorie_id'] ?? 0);
-
-        if (empty($titre) || empty($description) || empty($categorie_id)) {
-            $error = "Tous les champs sont obligatoires.";
-        } else {
-            $success = ajouterObjet($pdo, $brocanteur_id, $titre, $description, $categorie_id);
+// Handle different actions
+switch ($action) {
+    case 'create':
+        $data = $controller->create();
+        if ($data['success']) {
+            // Redirect to avoid resubmission
+            header('Location: admin_dashboard.php?page=objet&action=list&success=1');
+            exit();
         }
-    }
+        // Preserve form data on error
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $formData = [
+                'titre' => $_POST['titre'] ?? '',
+                'description' => $_POST['description'] ?? '',
+                'categorie_id' => $_POST['categorie_id'] ?? 0
+            ];
+        }
+        break;
+        
+    case 'edit':
+        if ($id > 0) {
+            $data = $controller->update($id);
+            if ($data['success']) {
+                // Redirect to avoid resubmission
+                header('Location: admin_dashboard.php?page=objet&action=list&updated=1');
+                exit();
+            }
+            // Preserve form data
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $formData = [
+                    'titre' => $_POST['titre'] ?? '',
+                    'description' => $_POST['description'] ?? '',
+                    'categorie_id' => $_POST['categorie_id'] ?? 0
+                ];
+            } else {
+                // Pre-fill form with existing data
+                $objet = $data['objet'];
+                if ($objet) {
+                    $formData = [
+                        'titre' => $objet['titre'],
+                        'description' => $objet['description'],
+                        'categorie_id' => $objet['categorie_id']
+                    ];
+                }
+            }
+        }
+        break;
+        
+    case 'delete':
+        if ($id > 0) {
+            $data = $controller->delete($id);
+            if ($data['success']) {
+                header('Location: admin_dashboard.php?page=objet&action=list&deleted=1');
+                exit();
+            }
+        }
+        break;
+        
+    case 'list':
+    default:
+        $data = $controller->getUserObjects();
+        break;
+}
 
-    if (isset($_POST['supprimer'])) {
-        $objet_id = intval($_POST['objet_id'] ?? 0);
-        $success = supprimerObjet($pdo, $objet_id, $brocanteur_id);
+// Get categories for forms
+if (in_array($action, ['create', 'edit'])) {
+    if (!isset($data['categories'])) {
+        $categorieModel = new \Models\Categorie();
+        $data['categories'] = $categorieModel->getAll();
     }
 }
 
-// Récupération des données
-$categories = getCategories($pdo);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajouter un objet</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Gestion des objets</title>
+    <link rel="stylesheet" href="../../css/styles.css">
 </head>
 <body>
 <div class="container">
-    <h1>Ajouter un objet</h1>
-    <?php if ($error): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
+    <?php if ($action === 'list'): ?>
+        <h1>Mes objets</h1>
+        
+        <!-- Success/Error messages -->
+        <?php if (isset($_GET['success'])): ?>
+            <p class="success">Objet ajouté avec succès !</p>
+        <?php endif; ?>
+        <?php if (isset($_GET['updated'])): ?>
+            <p class="success">Objet mis à jour avec succès !</p>
+        <?php endif; ?>
+        <?php if (isset($_GET['deleted'])): ?>
+            <p class="success">Objet supprimé avec succès !</p>
+        <?php endif; ?>
+        
+        
+        <?php if (!empty($data['objets'])): ?>
+            <div class="objects-grid">
+                <?php foreach ($data['objets'] as $objet): ?>
+                    <div class="object-card">
+                        <div class="object-image">
+                            <?php if (!empty($objet['photo_objet']) && file_exists(__DIR__ . '/../../' . $objet['photo_objet'])): ?>
+                                <img src="../../<?= htmlspecialchars($objet['photo_objet']) ?>" alt="<?= htmlspecialchars($objet['titre']) ?>">
+                            <?php else: ?>
+                                <div class="no-image">Pas d'image</div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="object-info">
+                            <h3><?= htmlspecialchars($objet['titre']) ?></h3>
+                            <p class="description"><?= htmlspecialchars(substr($objet['description'], 0, 100)) ?><?= strlen($objet['description']) > 100 ? '...' : '' ?></p>
+                            <p class="category">Catégorie: <?= htmlspecialchars($objet['categorie_nom'] ?? 'Non définie') ?></p>
+                        </div>
+                        <div class="object-actions">
+                            <a href="admin_dashboard.php?page=objet&action=edit&id=<?= $objet['id'] ?>" class="btn btn-secondary">Modifier</a>
+                            <a href="admin_dashboard.php?page=objet&action=delete&id=<?= $objet['id'] ?>" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment supprimer cet objet ?')">Supprimer</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p>Vous n'avez pas encore ajouté d'objets.</p>
+        <?php endif; ?>
+        
+    <?php elseif ($action === 'create'): ?>
+        <h1>Ajouter un objet</h1>
+        
+        <?php if (!empty($data['errors'])): ?>
+            <div class="error-messages">
+                <?php foreach ($data['errors'] as $error): ?>
+                    <p class="error"><?= htmlspecialchars($error) ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+        
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="titre">Titre *</label>
+                <input type="text" id="titre" name="titre" value="<?= htmlspecialchars($formData['titre']) ?>" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" rows="4" required><?= htmlspecialchars($formData['description']) ?></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="categorie_id">Catégorie *</label>
+                <select id="categorie_id" name="categorie_id" required>
+                    <option value="">Sélectionnez une catégorie</option>
+                    <?php foreach ($data['categories'] as $categorie): ?>
+                        <option value="<?= $categorie['id'] ?>" <?= $formData['categorie_id'] == $categorie['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($categorie['nom']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="photo">Photo de l'objet</label>
+                <input type="file" id="photo" name="photo" accept="image/*">
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Ajouter l'objet</button>
+                <a href="admin_dashboard.php?page=objet&action=list" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+        
+    <?php elseif ($action === 'edit'): ?>
+        <?php if (isset($data['objet']) && $data['objet']): ?>
+            <h1>Modifier l'objet</h1>
+            
+            <?php if (!empty($data['errors'])): ?>
+                <div class="error-messages">
+                    <?php foreach ($data['errors'] as $error): ?>
+                        <p class="error"><?= htmlspecialchars($error) ?></p>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+            
+            <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="titre">Titre *</label>
+                <input type="text" id="titre" name="titre" value="<?= htmlspecialchars($formData['titre']) ?>" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" rows="4" required><?= htmlspecialchars($formData['description']) ?></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="categorie_id">Catégorie *</label>
+                <select id="categorie_id" name="categorie_id" required>
+                    <option value="">Sélectionnez une catégorie</option>
+                    <?php foreach ($data['categories'] as $categorie): ?>
+                        <option value="<?= $categorie['id'] ?>" <?= $formData['categorie_id'] == $categorie['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($categorie['nom']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="photo">Photo de l'objet</label>
+                <input type="file" id="photo" name="photo" accept="image/*">
+                <?php if (!empty($data['objet']['photo_objet'])): ?>
+                    <div class="current-image">
+                        <img src="../../<?= htmlspecialchars($data['objet']['photo_objet']) ?>" alt="Photo actuelle" style="max-width: 200px; max-height: 200px;">
+                        <p>Photo actuelle</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                <a href="admin_dashboard.php?page=objet&action=list" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+        <?php else: ?>
+            <h1>Objet non trouvé</h1>
+            <p>L'objet que vous cherchez n'existe pas ou vous n'avez pas les droits pour le modifier.</p>
+            <a href="admin_dashboard.php?page=objet&action=list" class="btn btn-primary">Retour à la liste</a>
+        <?php endif; ?>
+    
     <?php endif; ?>
-    <?php if ($success): ?>
-        <p class="success"><?= htmlspecialchars($success) ?></p>
-    <?php endif; ?>
-    <form action="" method="POST">
-        <label for="titre">Titre :</label>
-        <input type="text" name="titre" id="titre" required>
-
-        <label for="description">Description :</label>
-        <textarea name="description" id="description" required></textarea>
-
-        <label for="categorie">Catégorie :</label>
-        <select name="categorie_id" id="categorie" required>
-            <option value="">Sélectionnez une catégorie</option>
-            <?php foreach ($categories as $categorie): ?>
-                <option value="<?= $categorie['id'] ?>"><?= htmlspecialchars($categorie['nom']) ?></option>
-            <?php endforeach; ?>
-        </select>
-        <button type="submit" name="ajouter">Ajouter</button>
-    </form>
 </div>
-<style>
-    .objets-liste {
-        list-style: none;
-        padding: 0;
-    }
-    .objet-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px;
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-    .objet-details {
-        flex: 1;
-    }
-    .categorie {
-        font-size: 0.9em;
-        color: #666;
-    }
-    .supprimer-form {
-        margin-left: 15px;
-    }
-    .supprimer-btn {
-        background-color: #ff4d4d;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    .supprimer-btn:hover {
-        background-color: #cc0000;
-    }
-</style>
 </body>
 </html>

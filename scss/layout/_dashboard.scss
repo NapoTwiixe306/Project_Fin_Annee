@@ -1,0 +1,422 @@
+// ========================================
+// LAYOUT - DASHBOARD RESPONSIVE
+// ========================================
+
+@use '../abstracts' as *;
+
+// === LAYOUT PRINCIPAL DU DASHBOARD ===
+.dashboard {
+  min-height: 100vh;
+  background: $color-bg-gradient;
+  
+  &__container {
+    @include container();
+    padding-top: $height-navbar;
+    padding-bottom: $spacing-8;
+    
+    @include mobile-only {
+      padding-top: calc(#{$height-navbar} - 1rem);
+    }
+  }
+  
+  &__content {
+    margin-top: $spacing-8;
+    
+    @include mobile-only {
+      margin-top: $spacing-6;
+    }
+  }
+}
+
+// === MAIN CONTENT AREA ===
+.main-content {
+  margin-top: $height-navbar;
+  padding: $spacing-8;
+  max-width: $max-width-7xl;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: calc(100vh - #{$height-navbar});
+  
+  @include mobile-only {
+    padding: $spacing-4;
+    margin-top: calc(#{$height-navbar} - 0.5rem);
+  }
+  
+  @include respond-to('sm') {
+    padding: $spacing-6;
+  }
+  
+  @include respond-to('lg') {
+    padding: $spacing-10;
+  }
+}
+
+// === CONTAINER PRINCIPAL ===
+.container {
+  background: $color-white;
+  border-radius: $radius-2xl;
+  padding: $spacing-10;
+  @include shadow();
+  margin-bottom: $spacing-8;
+  
+  @include mobile-only {
+    padding: $spacing-6;
+    border-radius: $radius-lg;
+    margin-bottom: $spacing-6;
+  }
+  
+  @include respond-to('sm') {
+    padding: $spacing-8;
+  }
+}
+
+// === TITRES DE PAGE ===
+.page-title {
+  color: $color-primary;
+  @include heading($font-size-2xl, $font-size-4xl);
+  margin-bottom: $spacing-8;
+  text-align: center;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -$spacing-3;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5rem;
+    height: 0.25rem;
+    background: linear-gradient(90deg, $color-secondary, $color-success);
+    border-radius: $radius-sm;
+  }
+  
+  @include mobile-only {
+    margin-bottom: $spacing-6;
+    
+    &::after {
+      width: 3rem;
+    }
+  }
+}
+
+// === SECTIONS ===
+.section {
+  &__header {
+    @include flex-between;
+    align-items: flex-start;
+    gap: $spacing-4;
+    margin-bottom: $spacing-6;
+    
+    @include mobile-only {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+  
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+    margin: 0;
+    
+    @include mobile-only {
+      font-size: $font-size-lg;
+    }
+  }
+  
+  &__actions {
+    @include flex-wrap;
+    gap: $spacing-3;
+    
+    @include mobile-only {
+      width: 100%;
+      
+      .btn {
+        flex: 1;
+      }
+    }
+  }
+}
+
+// === STATS CARDS ===
+.stats-grid {
+  @include grid-responsive(15rem); // 240px minimum
+  gap: $spacing-6;
+  margin-bottom: $spacing-8;
+}
+
+.stat-card {
+  @include card-base;
+  padding: $spacing-6;
+  text-align: center;
+  @include transition();
+  
+  &:hover {
+    @include shadow('md');
+    @include hover-lift();
+  }
+  
+  &__icon {
+    font-size: $font-size-3xl;
+    margin-bottom: $spacing-4;
+    opacity: 0.8;
+  }
+  
+  &__value {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+    margin-bottom: $spacing-2;
+    line-height: $line-height-tight;
+  }
+  
+  &__label {
+    color: $color-dark;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    margin: 0;
+  }
+}
+
+// === TABS ===
+.tabs {
+  margin-bottom: $spacing-8;
+  
+  &__nav {
+    @include flex-wrap;
+    gap: $spacing-1;
+    border-bottom: 0.0625rem solid $color-light;
+    margin-bottom: $spacing-6;
+    
+    @include mobile-only {
+      gap: 0;
+      border-bottom: none;
+      background: $color-bg-secondary;
+      border-radius: $radius-lg;
+      padding: $spacing-1;
+    }
+  }
+  
+  &__button {
+    padding: $spacing-3 $spacing-6;
+    border: none;
+    background: transparent;
+    color: $color-dark;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    border-radius: $radius-md;
+    @include transition();
+    
+    &:hover {
+      color: $color-primary;
+      background-color: rgba($color-primary, 0.1);
+    }
+    
+    &--active {
+      color: $color-primary;
+      background-color: rgba($color-primary, 0.1);
+      border-bottom: 0.125rem solid $color-primary;
+      
+      @include mobile-only {
+        border-bottom: none;
+        background: $color-white;
+        @include shadow('sm');
+      }
+    }
+    
+    @include mobile-only {
+      flex: 1;
+      text-align: center;
+      border-radius: $radius-md;
+      margin: 0;
+    }
+  }
+  
+  &__content {
+    @include fade-in();
+  }
+}
+
+// === SIDEBAR LAYOUT (pour dashboard avec sidebar) ===
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 16rem 1fr; // 256px sidebar
+  min-height: 100vh;
+  
+  @include mobile-only {
+    grid-template-columns: 1fr;
+  }
+  
+  &__sidebar {
+    background: $color-white;
+    @include shadow('lg');
+    z-index: z('sticky');
+    
+    @include mobile-only {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      transform: translateX(-100%);
+      @include transition();
+      
+      &--open {
+        transform: translateX(0);
+      }
+    }
+  }
+  
+  &__main {
+    background: $color-bg-gradient;
+    padding: $spacing-8;
+    overflow-x: hidden;
+    
+    @include mobile-only {
+      padding: $spacing-4;
+    }
+  }
+}
+
+// === RESPONSIVE UTILITIES ===
+.mobile-only {
+  @include desktop-only {
+    display: none !important;
+  }
+}
+
+.desktop-only {
+  @include mobile-only {
+    display: none !important;
+  }
+}
+
+// === LOADING STATES ===
+.loading {
+  @include flex-center;
+  padding: $spacing-8;
+  color: $color-dark;
+  
+  &__spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 0.125rem solid $color-light;
+    border-top-color: $color-primary;
+    border-radius: $radius-full;
+    animation: spin 1s linear infinite;
+    margin-right: $spacing-3;
+  }
+  
+  &__text {
+    font-weight: $font-weight-medium;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// === MODALS ===
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: z('modal');
+  @include flex-center;
+  padding: $spacing-4;
+  opacity: 0;
+  visibility: hidden;
+  @include transition();
+  
+  &--active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  &__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba($color-black, 0.6);
+    backdrop-filter: blur(0.25rem);
+  }
+  
+  &__content {
+    position: relative;
+    background: $color-white;
+    border-radius: $radius-2xl;
+    @include shadow('xl');
+    max-width: $max-width-2xl;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    @include transition();
+    
+    .modal--active & {
+      transform: scale(1);
+    }
+  }
+  
+  &__header {
+    padding: $spacing-6;
+    border-bottom: 0.0625rem solid $color-light;
+    @include flex-between;
+    
+    h2 {
+      margin: 0;
+      color: $color-primary;
+    }
+  }
+  
+  &__body {
+    padding: $spacing-6;
+  }
+  
+  &__footer {
+    padding: $spacing-6;
+    border-top: 0.0625rem solid $color-light;
+    @include flex-wrap;
+    gap: $spacing-3;
+    justify-content: flex-end;
+    
+    @include mobile-only {
+      flex-direction: column;
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+  
+  &__close {
+    background: none;
+    border: none;
+    color: $color-dark;
+    cursor: pointer;
+    padding: $spacing-2;
+    border-radius: $radius-md;
+    @include transition();
+    
+    &:hover {
+      background-color: rgba($color-danger, 0.1);
+      color: $color-danger;
+    }
+  }
+}
+
+// === ACCESSIBILITY ===
+@media (prefers-reduced-motion: reduce) {
+  .dashboard__content,
+  .tabs__content,
+  .modal__content,
+  .loading__spinner {
+    animation: none;
+    transition: none;
+  }
+}

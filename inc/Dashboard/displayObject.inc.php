@@ -58,7 +58,7 @@ if (isset($_POST['supprimer'])) {
 
 
 // Récupérer les objets après modification
-$stmt = $pdo->prepare("SELECT * FROM objets WHERE brocanteur_id = ? ORDER BY created_at DESC");
+$stmt = $pdo->prepare("SELECT o.*, c.nom as categorie_nom FROM objets o LEFT JOIN categories c ON o.categorie_id = c.id WHERE o.brocanteur_id = ? ORDER BY o.created_at DESC");
 $stmt->execute([$brocanteur_id]);
 $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -77,7 +77,7 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="objet-details">
                 <h3><?= htmlspecialchars($objet['titre']) ?></h3>
                 <p><?= htmlspecialchars($objet['description']) ?></p>
-                <span class="categorie">Catégorie : <?= htmlspecialchars($objet['categorie']) ?></span>
+                <span class="categorie">Catégorie : <?= htmlspecialchars($objet['categorie_nom'] ?? 'Non définie') ?></span>
             </div>
             <form action="" method="POST" style="display:inline;">
                 <input type="hidden" name="objet_id" value="<?= $objet['id'] ?>">

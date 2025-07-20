@@ -1,0 +1,498 @@
+// ========================================
+// MES OBJETS - DASHBOARD DESIGN
+// ========================================
+
+// Variables
+$primary-color: #2c3e50;
+$secondary-color: #3498db;
+$success-color: #27ae60;
+$warning-color: #f39c12;
+$danger-color: #e74c3c;
+$light-gray: #ecf0f1;
+$medium-gray: #bdc3c7;
+$dark-gray: #7f8c8d;
+$white: #ffffff;
+$shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+$border-radius: 12px;
+$transition: all 0.3s ease;
+
+// Mixins
+@mixin card-shadow {
+  box-shadow: $shadow;
+  transition: $transition;
+  
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
+@mixin button-style($bg-color, $text-color: white) {
+  background: $bg-color;
+  color: $text-color;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: $transition;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(110%);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Layout principal
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.main-content {
+  margin-top: 80px; // Espacement pour éviter la navbar
+  padding: 2rem;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin-top: 70px;
+  }
+}
+
+// Container principal
+.container {
+  background: $white;
+  border-radius: $border-radius;
+  padding: 2.5rem;
+  @include card-shadow;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+}
+
+// Titre principal
+h1 {
+  color: $primary-color;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, $secondary-color, $success-color);
+    border-radius: 2px;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+// Messages de succès/erreur
+.success {
+  background: linear-gradient(135deg, #d5f4e6, #feffff);
+  color: #155724;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid $success-color;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  
+  &::before {
+    content: '✅';
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+  }
+}
+
+.error {
+  background: linear-gradient(135deg, #fdeaea, #feffff);
+  color: #721c24;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid $danger-color;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  
+  &::before {
+    content: '❌';
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+  }
+}
+
+// Grid des objets
+.objects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+// Carte d'objet
+.object-card {
+  background: $white;
+  border-radius: $border-radius;
+  overflow: hidden;
+  @include card-shadow;
+  border: 1px solid rgba(52, 152, 219, 0.1);
+  transition: $transition;
+  
+  &:hover {
+    border-color: rgba(52, 152, 219, 0.3);
+  }
+}
+
+// Image de l'objet
+.object-image {
+  height: 220px;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, $light-gray, $medium-gray);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: $transition;
+  }
+  
+  .no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: $dark-gray;
+    font-size: 1rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    
+    &::before {
+      content: '🖼️';
+      font-size: 2rem;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Informations de l'objet
+.object-info {
+  padding: 1.5rem;
+  
+  h3 {
+    color: $primary-color;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+  }
+  
+  .description {
+    color: $dark-gray;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    min-height: 3.2rem; // Pour aligner les cartes
+  }
+  
+  .category {
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    color: $secondary-color;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 0;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+  }
+}
+
+// Actions sur l'objet
+.object-actions {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $transition;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    
+    &.btn-secondary {
+      @include button-style($secondary-color);
+      
+      &:hover {
+        background: darken($secondary-color, 10%);
+      }
+    }
+    
+    &.btn-danger {
+      @include button-style($danger-color);
+      
+      &:hover {
+        background: darken($danger-color, 10%);
+      }
+    }
+  }
+}
+
+// État vide
+.container > p {
+  text-align: center;
+  color: $dark-gray;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  border: 2px dashed $medium-gray;
+  
+  &::before {
+    content: '📦';
+    display: block;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+}
+
+// Animations
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.object-card {
+  animation: slideInUp 0.6s ease forwards;
+  
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Styles pour les formulaires
+.form-group {
+  margin-bottom: 1.5rem;
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: $primary-color;
+    font-size: 0.95rem;
+  }
+  
+  input[type="text"],
+  input[type="file"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: $transition;
+    background: white;
+    
+    &:focus {
+      border-color: $secondary-color;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    &:hover {
+      border-color: $medium-gray;
+    }
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  
+  input[type="file"] {
+    padding: 0.75rem;
+    background: $light-gray;
+    border: 2px dashed $medium-gray;
+    
+    &:hover {
+      background: darken($light-gray, 3%);
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e1e8ed;
+  
+  .btn {
+    padding: 0.875rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: $transition;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    
+    &.btn-primary {
+      background: linear-gradient(135deg, $secondary-color, darken($secondary-color, 5%));
+      color: white;
+      
+      &:hover {
+        background: linear-gradient(135deg, darken($secondary-color, 5%), darken($secondary-color, 10%));
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+      }
+    }
+    
+    &.btn-secondary {
+      background: $medium-gray;
+      color: white;
+      
+      &:hover {
+        background: darken($medium-gray, 10%);
+        transform: translateY(-1px);
+      }
+    }
+  }
+  
+  @media (max-width: 576px) {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+.error-messages {
+  margin-bottom: 1.5rem;
+  
+  .error {
+    background: linear-gradient(135deg, #fdeaea, #feffff);
+    color: #721c24;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid $danger-color;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    
+    &::before {
+      content: '❌';
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.current-image {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: $light-gray;
+  border-radius: 8px;
+  text-align: center;
+  
+  img {
+    border-radius: 6px;
+    box-shadow: $shadow;
+  }
+  
+  p {
+    margin-top: 0.75rem;
+    color: $dark-gray;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .objects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .object-actions {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+  
+  .container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+}

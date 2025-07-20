@@ -1,36 +1,92 @@
 <?php
-$messageEnvoye = null;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = htmlspecialchars(trim($_POST["name"]));
-    $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
-    $sujet = htmlspecialchars(trim($_POST["sujet"]));
-    $message = htmlspecialchars(trim($_POST["message"]));
+// Check if user is logged in and get their email
+$userEmail = '';
+if (isset($_SESSION['brocanteur_id'])) {
+    require_once 'bdd.php';
+    $stmt = $pdo->prepare("SELECT email FROM brocanteurs WHERE id = ?");
+    $stmt->execute([$_SESSION['brocanteur_id']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user) {
+        $userEmail = $user['email'];
+    }
+}
 
-    if (!empty($name) && !empty($email) && !empty($sujet) && !empty($message) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        
-        $to = "j.milants@student.helmo.be";
-        
-        $subject = "Nouveau message de contact : $sujet";
+$errors = [];
+$success = false;
+$formData = [
+    'nom' => '',
+    'prenom' => '',
+    'email' => $userEmail,
+    'sujet' => '',
+    'message' => ''
+];
 
-        $body = "Nom : $name\n";
-        $body .= "Email : $email\n\n";
-        $body .= "Message :\n$message";
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $adminEmail = "j.milants@student.helmo.be";
+    $nom = trim($_POST["nom"] ?? '');
+    $prenom = trim($_POST["prenom"] ?? '');
+    $email = trim($_POST["email"] ?? '');
+    $sujet = trim($_POST["sujet"] ?? '');
+    $message = trim($_POST["message"] ?? '');
 
-        // Headers
-        $headers = "From: $name <$email>" . "\r\n" .
-                   "Reply-To: $email" . "\r\n" .
-                   "Content-Type: text/plain; charset=utf-8";
+    // Preserve form data
+    $formData = [
+        'nom' => $nom,
+        'prenom' => $prenom,
+        'email' => $email,
+        'sujet' => $sujet,
+        'message' => $message
+    ];
 
-        // Envoi
-        if (mail($to, $subject, $body, $headers)) {
-            $messageEnvoye = "Message envoyé avec succès. Merci de nous avoir contactés !";
+    // Validation
+    if (empty($nom)) {
+        $errors[] = "Le nom est obligatoire.";
+    }
+    if (empty($prenom)) {
+        $errors[] = "Le prénom est obligatoire.";
+    }
+    if (empty($email)) {
+        $errors[] = "L'adresse email est obligatoire.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Format d'adresse email invalide.";
+    }
+    if (empty($sujet)) {
+        $errors[] = "Le sujet est obligatoire.";
+    }
+    if (empty($message)) {
+        $errors[] = "Le message est obligatoire.";
+    }
+
+    // If no errors, send email
+    if (empty($errors)) {
+        $emailSubject = "[Supra Brocante] $sujet";
+        $emailContent = "Message reçu de : $prenom $nom <$email>\n\n";
+        $emailContent .= "Sujet: $sujet\n\n";
+        $emailContent .= "Message:\n$message";
+
+        // Headers for admin email
+        $headers = "From: $email\r\n";
+        $headers .= "Reply-To: $email\r\n";
+        $headers .= "Cc: $email\r\n"; // Copy to sender
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+        // Send email (will work on production server)
+        if (mail($adminEmail, $emailSubject, $emailContent, $headers)) {
+            $success = true;
+            $formData = [ // Reset form on success
+                'nom' => '',
+                'prenom' => '',
+                'email' => $userEmail,
+                'sujet' => '',
+                'message' => ''
+            ];
         } else {
-            $messageEnvoye = "❌ Une erreur est survenue lors de l'envoi du message.";
+            $errors[] = "Erreur lors de l'envoi du message. Veuillez réessayer plus tard.";
         }
-
-    } else {
-        $messageEnvoye = "❌ Veuillez remplir tous les champs correctement.";
     }
 }
 ?>
@@ -54,27 +110,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h2>Contactez-nous</h2>
                 <p>Envoyez-nous un message et nous vous répondrons dans les plus brefs délais.</p>
 
-                <?php if ($messageEnvoye): ?>
-                    <p><?= $messageEnvoye ?></p>
+                <?php if ($success): ?>
+                    <div class="success-message">
+                        <p style="color: green; font-weight: bold;">Votre message a été envoyé avec succès ! Vous recevrez une copie à votre adresse email.</p>
+                    </div>
                 <?php endif; ?>
 
-                <form action="" method="POST">
-                    <label for="name">Nom :</label>
-                    <input type="text" name="name" id="name" placeholder="Entrez votre Nom..." required>
+                <?php if (!empty($errors)): ?>
+                    <div class="error-messages">
+                        <?php foreach ($errors as $error): ?>
+                            <p style="color: red; font-weight: bold;"><?= htmlspecialchars($error) ?></p>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
 
-                    <label for="email">Email :</label>
-                    <input type="email" name="email" id="email" placeholder="Entrez votre Email..." required>
+                <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"])?>" class="column">
+                    <label for="nom">Nom * :</label>
+                    <input type="text" name="nom" id="nom" value="<?= htmlspecialchars($formData['nom']) ?>" required>
 
-                    <label for="sujet">Sujet :</label>
-                    <input type="text" name="sujet" id="sujet" placeholder="Entrez votre Sujet..." required>
+                    <label for="prenom">Prénom * :</label>
+                    <input type="text" name="prenom" id="prenom" value="<?= htmlspecialchars($formData['prenom']) ?>" required>
 
-                    <label for="message">Message :</label>
-                    <textarea name="message" id="message" placeholder="Entrez votre Message..." required></textarea>
+                    <label for="email">Adresse email * :</label>
+                    <input type="email" name="email" id="email" value="<?= htmlspecialchars($formData['email']) ?>" required>
 
-                    <article>
-                        <button type="reset" class="cancel">Annuler</button>
-                        <button type="submit" class="send">Envoyer</button>
-                    </article>
+                    <label for="sujet">Sujet * :</label>
+                    <input type="text" name="sujet" id="sujet" value="<?= htmlspecialchars($formData['sujet']) ?>" required>
+
+                    <label for="message">Message * :</label>
+                    <textarea name="message" id="message" rows="6" required><?= htmlspecialchars($formData['message']) ?></textarea>
+
+                    <button type="submit">Envoyer</button>
                 </form>
             </article>
         </section>

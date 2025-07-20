@@ -1,0 +1,421 @@
+// ========================================
+// FORMS - SYSTÈME DE FORMULAIRES
+// ========================================
+
+@use '../abstracts' as *;
+
+// === FORMULAIRES DE BASE ===
+.form {
+  width: 100%;
+  
+  &--inline {
+    @include flex-wrap;
+    gap: $spacing-4;
+    align-items: flex-end;
+  }
+}
+
+// === GROUPES DE CHAMPS ===
+.form-group {
+  margin-bottom: $spacing-6;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  &--inline {
+    @include flex-between;
+    align-items: center;
+    gap: $spacing-4;
+    
+    .form-label {
+      margin-bottom: 0;
+      min-width: fit-content;
+    }
+  }
+}
+
+// === LABELS ===
+.form-label {
+  display: block;
+  margin-bottom: $spacing-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  line-height: $line-height-tight;
+  
+  &--required::after {
+    content: ' *';
+    color: $color-danger;
+  }
+  
+  &--optional::after {
+    content: ' (optionnel)';
+    color: $color-dark;
+    font-weight: $font-weight-normal;
+  }
+}
+
+// === INPUTS ===
+.form-input {
+  @include input-base;
+  
+  &--sm {
+    padding: $spacing-2;
+    font-size: $font-size-sm;
+  }
+  
+  &--lg {
+    padding: $spacing-4;
+    font-size: $font-size-lg;
+  }
+  
+  // États de validation
+  &--valid {
+    border-color: $color-success;
+    
+    &:focus {
+      border-color: $color-success;
+      box-shadow: 0 0 0 3px rgba($color-success, 0.1);
+    }
+  }
+  
+  &--invalid {
+    border-color: $color-danger;
+    
+    &:focus {
+      border-color: $color-danger;
+      box-shadow: 0 0 0 3px rgba($color-danger, 0.1);
+    }
+  }
+}
+
+// === TEXTAREA ===
+.form-textarea {
+  @include input-base;
+  resize: vertical;
+  min-height: 6rem;
+  
+  &--sm {
+    min-height: 4rem;
+  }
+  
+  &--lg {
+    min-height: 8rem;
+  }
+}
+
+// === SELECT ===
+.form-select {
+  @include input-base;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right $spacing-3 center;
+  background-repeat: no-repeat;
+  background-size: 1rem;
+  padding-right: $spacing-10;
+  cursor: pointer;
+  
+  &:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  }
+  
+  &[multiple] {
+    background-image: none;
+    padding-right: $spacing-3;
+    height: auto;
+    min-height: 6rem;
+  }
+}
+
+// === CHECKBOX & RADIO ===
+.form-check {
+  @include flex-center;
+  gap: $spacing-3;
+  margin-bottom: $spacing-3;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  &--inline {
+    display: inline-flex;
+    margin-right: $spacing-6;
+    margin-bottom: $spacing-2;
+  }
+}
+
+.form-check-input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  border: 0.125rem solid $color-medium;
+  border-radius: $radius-sm;
+  background-color: $color-white;
+  cursor: pointer;
+  @include transition();
+  
+  &:checked {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+    background-size: 0.75rem;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
+  }
+  
+  &[type="radio"] {
+    border-radius: $radius-full;
+    
+    &:checked {
+      background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+    }
+  }
+}
+
+.form-check-label {
+  font-size: $font-size-base;
+  color: $color-black;
+  cursor: pointer;
+  line-height: $line-height-normal;
+}
+
+// === FILE INPUT ===
+.form-file {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width: 100%;
+  
+  &-input {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+  }
+  
+  &-label {
+    @include input-base;
+    @include flex-center;
+    gap: $spacing-2;
+    cursor: pointer;
+    background: $color-bg-secondary;
+    border: 0.125rem dashed $color-medium;
+    @include transition();
+    
+    &:hover {
+      background: $color-light;
+      border-color: $color-dark;
+    }
+    
+    &--dragover {
+      background: rgba($color-primary, 0.05);
+      border-color: $color-primary;
+    }
+  }
+  
+  &-text {
+    color: $color-dark;
+    font-weight: $font-weight-medium;
+  }
+}
+
+// === SWITCH ===
+.form-switch {
+  position: relative;
+  display: inline-block;
+  width: 3rem;
+  height: 1.5rem;
+  
+  &-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    
+    &:checked + .form-switch-slider {
+      background-color: $color-primary;
+      
+      &::before {
+        transform: translateX(1.5rem);
+      }
+    }
+    
+    &:focus + .form-switch-slider {
+      box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
+    }
+  }
+  
+  &-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $color-medium;
+    border-radius: $radius-full;
+    @include transition();
+    
+    &::before {
+      position: absolute;
+      content: "";
+      height: 1.25rem;
+      width: 1.25rem;
+      left: 0.125rem;
+      bottom: 0.125rem;
+      background-color: $color-white;
+      border-radius: $radius-full;
+      @include transition();
+    }
+  }
+}
+
+// === MESSAGES DE VALIDATION ===
+.form-feedback {
+  margin-top: $spacing-2;
+  font-size: $font-size-sm;
+  line-height: $line-height-tight;
+  
+  &--valid {
+    color: $color-success;
+  }
+  
+  &--invalid {
+    color: $color-danger;
+  }
+}
+
+// === GROUPES D'INPUTS ===
+.input-group {
+  position: relative;
+  @include flex-wrap;
+  
+  .form-input {
+    border-radius: 0;
+    
+    &:not(:first-child) {
+      border-left: 0;
+    }
+    
+    &:first-child {
+      border-top-left-radius: $radius-md;
+      border-bottom-left-radius: $radius-md;
+    }
+    
+    &:last-child {
+      border-top-right-radius: $radius-md;
+      border-bottom-right-radius: $radius-md;
+    }
+    
+    &:focus {
+      z-index: 2;
+      border-left-width: 0.0625rem;
+    }
+  }
+}
+
+.input-group-text {
+  @include flex-center;
+  padding: $spacing-3;
+  background-color: $color-light;
+  border: 0.0625rem solid $color-medium;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-dark;
+  white-space: nowrap;
+  
+  &:first-child {
+    border-top-left-radius: $radius-md;
+    border-bottom-left-radius: $radius-md;
+    border-right: 0;
+  }
+  
+  &:last-child {
+    border-top-right-radius: $radius-md;
+    border-bottom-right-radius: $radius-md;
+    border-left: 0;
+  }
+}
+
+// === ACTIONS DE FORMULAIRE ===
+.form-actions {
+  @include flex-wrap;
+  gap: $spacing-4;
+  justify-content: flex-end;
+  margin-top: $spacing-8;
+  padding-top: $spacing-6;
+  border-top: 0.0625rem solid $color-light;
+  
+  &--center {
+    justify-content: center;
+  }
+  
+  &--start {
+    justify-content: flex-start;
+  }
+  
+  &--between {
+    justify-content: space-between;
+  }
+  
+  @include mobile-only {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+// === RESPONSIVE ===
+@include mobile-only {
+  .form-group--inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form--inline {
+    flex-direction: column;
+  }
+  
+  .form-check--inline {
+    display: flex;
+    margin-right: 0;
+    margin-bottom: $spacing-3;
+  }
+}
+
+// === ÉTATS DE FOCUS ===
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  z-index: 2;
+}
+
+// === DARK MODE (optionnel) ===
+@media (prefers-color-scheme: dark) {
+  .form-input,
+  .form-textarea,
+  .form-select {
+    background-color: $color-primary-dark;
+    border-color: $color-dark;
+    color: $color-white;
+    
+    &::placeholder {
+      color: $color-medium;
+    }
+  }
+  
+  .form-label {
+    color: $color-light;
+  }
+  
+  .form-check-input {
+    background-color: $color-primary-dark;
+    border-color: $color-dark;
+  }
+}

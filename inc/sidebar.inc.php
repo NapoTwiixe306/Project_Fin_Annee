@@ -21,11 +21,8 @@ if (isset($_SESSION['brocanteur_id'])) {
         $role = $user['role'];
 
         if (!empty($user['photo_profil'])) {
-            $photo = '../uploads/' . htmlspecialchars($user['photo_profil']);
+            $photo = './uploads/' . htmlspecialchars($user['photo_profil']);
         }
-        
-        
-        
     }
 }
 ?>
@@ -35,34 +32,30 @@ if (isset($_SESSION['brocanteur_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar utilisateur</title>
+    <title>Navbar utilisateur</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<aside class="sidebar">
-    <section class="info">
-        <article style="display: flex; align-items: center; gap: 10px;">
-            <img src="<?= $photo ?>" alt="Photo de profil" style="width: 40px; height: 40px; border-radius: 50%;">
-            <h1 style="font-size: 1rem;"><?= $nomComplet ?></h1>
-        </article>
-    </section>
-    <ul>
-        <li><a href="/index.php">Accueil</a></li>
-        <li><a href="?page=modifier">Ajouter un objet</a></li>
-        <li><a href="?page=objet">Afficher</a></li>
-        <li><a href="?page=settings">Settings</a></li>
 
+<nav class="navbar">
+    <div class="navbar-left">
+        <img src="<?= $photo ?>" alt="Photo de profil" class="avatar">
+        <span class="username"><?= $nomComplet ?></span>
+    </div>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
+    <ul class="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="admin_dashboard.php?page=objet&action=create">Ajouter un objet</a></li>
+        <li><a href="admin_dashboard.php?page=objet">Mes objets</a></li>
+        <li><a href="admin_dashboard.php?page=settings">Paramètres</a></li>
         <?php if (isset($role) && $role === 'admin'): ?>
-            <li><a href="?page=admin">Administration</a></li>
+            <li><a href="admin_dashboard.php?page=admin">Administration</a></li>
         <?php endif; ?>
-    </ul>
-    <ul>
         <li>
-            <form action="logout.inc.php" method="POST">
-                <button type="submit">Déconnexion</button>
+            <form action="inc/logout.inc.php" method="POST">
+                <button type="submit" class="logout-btn">Déconnexion</button>
             </form>
         </li>
     </ul>
-</aside>
-</body>
-</html>
+</nav>

@@ -1,11 +1,3 @@
-<?php
-require_once 'src/autoload.php';
-use Controllers\ObjetController;
-
-$controller = new ObjetController();
-$data = $controller->index();
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
