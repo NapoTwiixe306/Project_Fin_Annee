@@ -26,6 +26,7 @@ class Objet
                 FROM objets o
                 JOIN categories c ON o.categorie_id = c.id
                 JOIN brocanteurs b ON o.brocanteur_id = b.id
+                WHERE b.visible = TRUE AND b.emplacement_id IS NOT NULL
                 ORDER BY o.created_at DESC";
         
         $stmt = $this->pdo->prepare($sql);
@@ -46,9 +47,14 @@ class Objet
                 FROM objets o
                 JOIN categories c ON o.categorie_id = c.id
                 JOIN brocanteurs b ON o.brocanteur_id = b.id
-                WHERE (o.titre LIKE :search OR c.nom LIKE :search)";
+                WHERE b.visible = TRUE AND b.emplacement_id IS NOT NULL";
 
-        $params = ['search' => '%' . $search . '%'];
+        $params = [];
+
+        if (!empty($search)) {
+            $sql .= " AND (o.titre LIKE :search OR c.nom LIKE :search)";
+            $params['search'] = '%' . $search . '%';
+        }
 
         if (!empty($filter)) {
             $sql .= " AND c.nom = :filter";

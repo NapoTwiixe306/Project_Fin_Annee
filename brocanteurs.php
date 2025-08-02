@@ -1,9 +1,58 @@
 <?php
-require_once 'src/autoload.php';
-use Controllers\BrocanteurController;
+require_once 'inc/config.php';
+require_once 'bdd.php';
 
-$controller = new BrocanteurController();
-$data = $controller->index();
+// Récupérer les filtres
+$search = $_GET['search'] ?? '';
+$filter_by = $_GET['filter_by'] ?? 'name';
+$zone = $_GET['zone'] ?? '';
+
+// Construire la requête
+$sql = "SELECT b.*, e.numero as emplacement, e.zone 
+        FROM brocanteurs b 
+        LEFT JOIN emplacements e ON b.emplacement_id = e.id 
+        WHERE b.visible = TRUE";
+
+$params = [];
+
+if (!empty($search)) {
+    if ($filter_by === 'name') {
+        $sql .= " AND (b.nom LIKE ? OR b.prenom LIKE ?)";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+    } elseif ($filter_by === 'emplacement') {
+        $sql .= " AND e.numero LIKE ?";
+        $params[] = "%$search%";
+    }
+}
+
+if (!empty($zone)) {
+    $sql .= " AND e.zone = ?";
+    $params[] = $zone;
+}
+
+$sql .= " ORDER BY b.nom, b.prenom";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$brocanteurs = $stmt->fetchAll();
+
+// Récupérer les zones pour le filtre
+$stmt = $pdo->query("SELECT DISTINCT e.zone FROM emplacements e 
+INNER JOIN brocanteurs b ON e.id = b.emplacement_id 
+WHERE b.visible = TRUE AND e.zone IS NOT NULL 
+ORDER BY e.zone");
+$zones = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+$data = [
+    'brocanteurs' => $brocanteurs,
+    'zones' => $zones,
+    'filters' => [
+        'search' => $search,
+        'filter_by' => $filter_by,
+        'zone' => $zone
+    ]
+];
 ?>
 
 <!doctype html>
@@ -55,7 +104,9 @@ $data = $controller->index();
                     </section>
                     <section class="badge">
                         <span class="emplacement">Emplacement <?= htmlspecialchars($brocanteur['emplacement'] ?? '') ?></span>
-                        <span class="zone">Zone <?= htmlspecialchars($brocanteur['zone'] ?? '') ?></span>
+                        <?php if (!empty($brocanteur['zone'])): ?>
+                            <span class="zone">Zone <?= htmlspecialchars($brocanteur['zone']) ?></span>
+                        <?php endif; ?>
                     </section>
                     <section class="description">
                         <p><?= htmlspecialchars($brocanteur['description'] ?? '') ?></p>

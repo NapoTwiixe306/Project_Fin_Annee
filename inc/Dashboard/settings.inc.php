@@ -1,16 +1,33 @@
 <?php
-require_once __DIR__ . '/../../src/autoload.php';
-use Controllers\BrocanteurController;
+// Vérifier l'authentification
+if (!isset($_SESSION['brocanteur_id'])) {
+    header('Location: connexion.php');
+    exit();
+}
 
-$controller = new BrocanteurController();
-$controller->requireAuth();
+// Récupérer les informations de l'utilisateur
+require_once __DIR__ . '/../../inc/config.php';
+require_once __DIR__ . '/../../bdd.php';
 
-$user = $controller->getCurrentUser();
+$brocanteur_id = $_SESSION['brocanteur_id'];
+$stmt = $pdo->prepare("SELECT * FROM brocanteurs WHERE id = ?");
+$stmt->execute([$brocanteur_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    header('Location: connexion.php');
+    exit();
+}
 
 $errors = [];
 $success = false;
 $passwordErrors = [];
 $passwordSuccess = false;
+$passwordFormData = [
+    'current_password' => '',
+    'new_password' => '',
+    'confirm_password' => ''
+];
 
 // Preserve form data
 $formData = [
@@ -41,18 +58,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Validation
     if (empty($nom)) {
         $errors[] = "Le nom est obligatoire.";
+    } elseif (strlen($nom) < 2) {
+        $errors[] = "Le nom doit contenir au moins 2 caractères.";
+    } elseif (strlen($nom) > 50) {
+        $errors[] = "Le nom ne peut pas dépasser 50 caractères.";
     }
+    
     if (empty($prenom)) {
         $errors[] = "Le prénom est obligatoire.";
+    } elseif (strlen($prenom) < 2) {
+        $errors[] = "Le prénom doit contenir au moins 2 caractères.";
+    } elseif (strlen($prenom) > 50) {
+        $errors[] = "Le prénom ne peut pas dépasser 50 caractères.";
     }
+    
     if (empty($email)) {
         $errors[] = "L'email est obligatoire.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Format d'email invalide.";
+        $errors[] = "Format d'email invalide. Veuillez saisir une adresse email valide.";
+    } elseif (strlen($email) > 255) {
+        $errors[] = "L'email ne peut pas dépasser 255 caractères.";
     }
 
     // Check email uniqueness
-    require_once __DIR__ . '/../../bdd.php';
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM brocanteurs WHERE email = ? AND id != ?");
     $stmt->execute([$email, $user['id']]);
     if ($stmt->fetchColumn() > 0) {
@@ -94,7 +122,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if ($stmt->execute($params)) {
             $success = true;
             // Refresh user data
-            $user = $controller->getCurrentUser();
+            $stmt = $pdo->prepare("SELECT * FROM brocanteurs WHERE id = ?");
+            $stmt->execute([$brocanteur_id]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
         } else {
             $errors[] = "Erreur lors de la mise à jour.";
         }
@@ -107,16 +137,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
+    // Preserve password form data in case of errors
+    $passwordFormData = [
+        'current_password' => $current_password,
+        'new_password' => $new_password,
+        'confirm_password' => $confirm_password
+    ];
+
     // Validation
     if (empty($current_password)) {
         $passwordErrors[] = "Le mot de passe actuel est obligatoire.";
     }
+    
     if (empty($new_password)) {
         $passwordErrors[] = "Le nouveau mot de passe est obligatoire.";
     } elseif (strlen($new_password) < 8) {
         $passwordErrors[] = "Le nouveau mot de passe doit contenir au moins 8 caractères.";
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/', $new_password)) {
+        $passwordErrors[] = "Le nouveau mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre.";
     }
-    if ($new_password !== $confirm_password) {
+    
+    if (empty($confirm_password)) {
+        $passwordErrors[] = "La confirmation du mot de passe est obligatoire.";
+    } elseif ($new_password !== $confirm_password) {
         $passwordErrors[] = "Les mots de passe ne correspondent pas.";
     }
 
@@ -127,10 +170,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     // Update password if no errors
     if (empty($passwordErrors)) {
-        require_once __DIR__ . '/../../bdd.php';
         $stmt = $pdo->prepare("UPDATE brocanteurs SET password_hash = ? WHERE id = ?");
         if ($stmt->execute([password_hash($new_password, PASSWORD_DEFAULT), $user['id']])) {
             $passwordSuccess = true;
+            // Clear form data on success
+            $passwordFormData = [
+                'current_password' => '',
+                'new_password' => '',
+                'confirm_password' => ''
+            ];
         } else {
             $passwordErrors[] = "Erreur lors de la mise à jour du mot de passe.";
         }
@@ -138,14 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Paramètres</title>
-    <link rel="stylesheet" href="../styles/settings.css">
-</head>
-<body>
+<div class="dashboard-settings">
     <h1>Paramètres de votre compte</h1>
     
     <!-- Profile Update Section -->
@@ -153,18 +194,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <h2>Informations personnelles</h2>
         
         <?php if ($success): ?>
-            <p style="color: green; font-weight: bold;">Profil mis à jour avec succès !</p>
+            <div class="success-message">
+                <strong>✅ Succès !</strong> Votre profil a été mis à jour avec succès.
+            </div>
         <?php endif; ?>
         
         <?php if (!empty($errors)): ?>
             <div class="error-messages">
-                <?php foreach ($errors as $error): ?>
-                    <p style="color: red; font-weight: bold;"><?= htmlspecialchars($error) ?></p>
-                <?php endforeach; ?>
+                <strong>❌ Erreurs de validation :</strong>
+                <ul>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
         <?php endif; ?>
         
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="settings-form">
             <input type="hidden" name="action" value="update_profile">
             
             <div class="form-group">
@@ -184,14 +230,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4"><?= htmlspecialchars($formData['description']) ?></textarea>
+                <textarea id="description" name="description" rows="4" placeholder="Parlez-nous de vous et de ce que vous vendez..."><?= htmlspecialchars($formData['description']) ?></textarea>
             </div>
             
-            <div class="form-group">
-                <label for="visibilite">
+            <div class="form-group checkbox-group">
+                <label for="visibilite" class="checkbox-label">
                     <input type="checkbox" id="visibilite" name="visibilite" <?= $formData['visibilite'] ? 'checked' : '' ?>>
+                    <span class="checkmark"></span>
                     Être visible en ligne
                 </label>
+                <small>Autorise l'affichage de votre profil et de vos objets sur le site</small>
             </div>
             
             <div class="form-group">
@@ -199,13 +247,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <input type="file" id="photo_profil" name="photo_profil" accept="image/*">
                 <?php if (!empty($user['photo_profil'])): ?>
                     <div class="current-photo">
-                        <img src="../../uploads/<?= htmlspecialchars($user['photo_profil']) ?>" alt="Photo actuelle" style="width:80px;height:80px;border-radius:50%;">
+                        <img src="../../uploads/<?= htmlspecialchars($user['photo_profil']) ?>" alt="Photo actuelle">
                         <p>Photo actuelle</p>
                     </div>
                 <?php endif; ?>
             </div>
             
-            <button type="submit">Mettre à jour le profil</button>
+            <button type="submit" class="btn btn-primary">Mettre à jour le profil</button>
         </form>
     </section>
     
@@ -214,38 +262,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <h2>Changer le mot de passe</h2>
         
         <?php if ($passwordSuccess): ?>
-            <p style="color: green; font-weight: bold;">Mot de passe mis à jour avec succès !</p>
+            <div class="success-message">
+                <strong>✅ Succès !</strong> Votre mot de passe a été mis à jour avec succès.
+            </div>
         <?php endif; ?>
         
         <?php if (!empty($passwordErrors)): ?>
             <div class="error-messages">
-                <?php foreach ($passwordErrors as $error): ?>
-                    <p style="color: red; font-weight: bold;"><?= htmlspecialchars($error) ?></p>
-                <?php endforeach; ?>
+                <strong>❌ Erreurs de validation :</strong>
+                <ul>
+                    <?php foreach ($passwordErrors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
         <?php endif; ?>
         
-        <form method="post">
+        <form method="post" class="settings-form">
             <input type="hidden" name="action" value="change_password">
             
             <div class="form-group">
                 <label for="current_password">Mot de passe actuel *</label>
-                <input type="password" id="current_password" name="current_password" required>
+                <input type="password" id="current_password" name="current_password" value="<?= htmlspecialchars($passwordFormData['current_password'] ?? '') ?>" required>
             </div>
             
             <div class="form-group">
                 <label for="new_password">Nouveau mot de passe *</label>
-                <input type="password" id="new_password" name="new_password" required>
-                <small>Au moins 8 caractères</small>
+                <input type="password" id="new_password" name="new_password" value="<?= htmlspecialchars($passwordFormData['new_password'] ?? '') ?>" required>
+                <small>Au moins 8 caractères, incluant une minuscule, une majuscule et un chiffre</small>
             </div>
             
             <div class="form-group">
                 <label for="confirm_password">Confirmer le nouveau mot de passe *</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
+                <input type="password" id="confirm_password" name="confirm_password" value="<?= htmlspecialchars($passwordFormData['confirm_password'] ?? '') ?>" required>
             </div>
             
-            <button type="submit">Changer le mot de passe</button>
+            <button type="submit" class="btn btn-primary">Changer le mot de passe</button>
         </form>
     </section>
-</body>
-</html>
+</div>

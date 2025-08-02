@@ -4,8 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once __DIR__ . '/config.php'; 
-require_once 'bdd.php';
+require_once __DIR__ . '/../inc/config.php'; 
+require_once __DIR__ . '/../bdd.php';
 
 $nomComplet = '';
 $photo = ''; // valeur par défaut
@@ -26,16 +26,6 @@ if (isset($_SESSION['brocanteur_id'])) {
     }
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navbar utilisateur</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
 
 <nav class="navbar">
     <div class="navbar-left">

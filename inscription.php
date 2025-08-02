@@ -1,6 +1,17 @@
 <?php
 require_once 'src/autoload.php';
 use Controllers\BrocanteurController;
+use Services\CSRFService;
+use Services\ValidationService;
+
+// Initialiser les données du formulaire avec des valeurs par défaut
+$form_data = [
+    'nom' => '',
+    'prenom' => '',
+    'email' => '',
+    'description' => '',
+    'visibilite_en_ligne' => '0'
+];
 
 $controller = new BrocanteurController();
 $result = $controller->register();
@@ -16,13 +27,40 @@ $emplacements = $result['emplacements'];
 $all_slots_taken = empty($emplacements);
 
 // Conserver les données du formulaire en cas d'erreur
-$form_data = [
-    'nom' => $_POST['nom'] ?? '',
-    'prenom' => $_POST['prenom'] ?? '',
-    'email' => $_POST['email'] ?? '',
-    'description' => $_POST['description'] ?? '',
-    'visibilite_en_ligne' => $_POST['visibilite_en_ligne'] ?? '0'
-];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($errors)) {
+    // Protection anti-spam : vérifier le champ honeypot
+    if (!empty($_POST['website'])) {
+        // Si le champ honeypot est rempli, c'est probablement un bot
+        $errors[] = "Erreur de validation. Veuillez réessayer.";
+    } else {
+        // Protection anti-spam : vérifier le temps minimum entre soumissions
+        $lastSubmission = $_SESSION['last_inscription_submission'] ?? 0;
+        $currentTime = time();
+        $minInterval = 60; // 60 secondes minimum entre soumissions d'inscription
+        
+        if ($currentTime - $lastSubmission < $minInterval) {
+            $errors[] = "Veuillez attendre une minute avant de renvoyer votre inscription.";
+        } else {
+            // Validation CSRF
+            $csrfService = CSRFService::getInstance();
+            if (!isset($_POST['csrf_token']) || !$csrfService->verifyToken($_POST['csrf_token'])) {
+                $error = "Erreur de sécurité. Veuillez réessayer.";
+            } else {
+                // Validation et nettoyage des données
+                $form_data = [
+                    'nom' => ValidationService::sanitizeString($_POST['nom'] ?? '', 50),
+                    'prenom' => ValidationService::sanitizeString($_POST['prenom'] ?? '', 50),
+                    'email' => ValidationService::sanitizeString($_POST['email'] ?? '', 255),
+                    'description' => ValidationService::sanitizeString($_POST['description'] ?? '', 1000),
+                    'visibilite_en_ligne' => $_POST['visibilite_en_ligne'] ?? '0'
+                ];
+                
+                // Enregistrer le temps de soumission pour la protection anti-spam
+                $_SESSION['last_inscription_submission'] = $currentTime;
+            }
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -61,6 +99,11 @@ $form_data = [
                 <?php endif; ?>
                 
                 <form method="POST" enctype="multipart/form-data">
+                    <!-- Champ honeypot caché pour la protection anti-spam -->
+                    <div style="display: none;">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+                    
                     <div class="form-group">
                         <label for="nom">Nom *</label>
                         <input type="text" id="nom" name="nom" value="<?= htmlspecialchars($form_data['nom']) ?>" required>

@@ -5,7 +5,7 @@ namespace Models;
 use Database\DatabaseConnection;
 use PDO;
 
-class Categorie
+class Zone
 {
     private $pdo;
 
@@ -15,11 +15,11 @@ class Categorie
     }
 
     /**
-     * Récupère toutes les catégories
+     * Récupère toutes les zones
      */
     public function getAll(): array
     {
-        $sql = "SELECT id, nom FROM categories ORDER BY nom ASC";
+        $sql = "SELECT * FROM zones ORDER BY nom";
         
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
@@ -28,29 +28,11 @@ class Categorie
     }
 
     /**
-     * Récupère les catégories utilisées par les brocanteurs avec emplacement
-     */
-    public function getUsedByBrocanteursWithEmplacement(): array
-    {
-        $sql = "SELECT DISTINCT c.id, c.nom 
-                FROM categories c 
-                INNER JOIN objets o ON c.id = o.categorie_id 
-                INNER JOIN brocanteurs b ON o.brocanteur_id = b.id 
-                WHERE b.visible = TRUE AND b.emplacement_id IS NOT NULL 
-                ORDER BY c.nom ASC";
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Récupère une catégorie par ID
+     * Récupère une zone par ID
      */
     public function getById(int $id): ?array
     {
-        $sql = "SELECT * FROM categories WHERE id = :id";
+        $sql = "SELECT * FROM zones WHERE id = :id";
         
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -59,11 +41,11 @@ class Categorie
     }
 
     /**
-     * Récupère une catégorie par nom
+     * Récupère une zone par nom
      */
     public function getByNom(string $nom): ?array
     {
-        $sql = "SELECT * FROM categories WHERE nom = :nom";
+        $sql = "SELECT * FROM zones WHERE nom = :nom";
         
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['nom' => $nom]);
@@ -72,11 +54,11 @@ class Categorie
     }
 
     /**
-     * Crée une nouvelle catégorie
+     * Crée une nouvelle zone
      */
     public function create(array $data): bool
     {
-        $sql = "INSERT INTO categories (nom) VALUES (:nom)";
+        $sql = "INSERT INTO zones (nom) VALUES (:nom)";
         
         $stmt = $this->pdo->prepare($sql);
         
@@ -86,11 +68,11 @@ class Categorie
     }
 
     /**
-     * Met à jour une catégorie
+     * Met à jour une zone
      */
     public function update(int $id, array $data): bool
     {
-        $sql = "UPDATE categories SET nom = :nom WHERE id = :id";
+        $sql = "UPDATE zones SET nom = :nom WHERE id = :id";
         
         $stmt = $this->pdo->prepare($sql);
         
@@ -101,23 +83,31 @@ class Categorie
     }
 
     /**
-     * Supprime une catégorie
+     * Supprime une zone
      */
     public function delete(int $id): bool
     {
-        $sql = "DELETE FROM categories WHERE id = :id";
+        // Vérifier qu'aucun emplacement n'utilise cette zone
+        $sql = "SELECT COUNT(*) FROM emplacements WHERE zone_id = :zone_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['zone_id' => $id]);
         
+        if ($stmt->fetchColumn() > 0) {
+            return false; // Impossible de supprimer une zone utilisée
+        }
+        
+        $sql = "DELETE FROM zones WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         
         return $stmt->execute(['id' => $id]);
     }
 
     /**
-     * Vérifie si une catégorie existe par nom
+     * Vérifie si une zone existe par nom
      */
     public function nomExists(string $nom, ?int $excludeId = null): bool
     {
-        $sql = "SELECT COUNT(*) FROM categories WHERE nom = :nom";
+        $sql = "SELECT COUNT(*) FROM zones WHERE nom = :nom";
         $params = ['nom' => $nom];
         
         if ($excludeId) {
@@ -132,15 +122,37 @@ class Categorie
     }
 
     /**
-     * Compte le nombre d'objets dans une catégorie
+     * Récupère les zones avec le nombre d'emplacements
      */
-    public function countObjets(int $id): int
+    public function getAllWithEmplacementCount(): array
     {
-        $sql = "SELECT COUNT(*) FROM objets WHERE categorie_id = :id";
+        $sql = "SELECT z.*, COUNT(e.id) as emplacement_count
+                FROM zones z
+                LEFT JOIN emplacements e ON z.id = e.zone_id
+                GROUP BY z.id
+                ORDER BY z.nom";
         
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['id' => $id]);
+        $stmt->execute();
         
-        return (int)$stmt->fetchColumn();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-}
+
+    /**
+     * Récupère les zones disponibles (avec emplacements libres)
+     */
+    public function getAvailableZones(): array
+    {
+        $sql = "SELECT DISTINCT z.*
+                FROM zones z
+                INNER JOIN emplacements e ON z.id = e.zone_id
+                LEFT JOIN brocanteurs b ON e.id = b.emplacement_id
+                WHERE b.emplacement_id IS NULL
+                ORDER BY z.nom";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} 

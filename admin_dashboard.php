@@ -1,10 +1,8 @@
 <?php
-require_once 'src/autoload.php';
-use Services\SessionService;
+session_start();
 
-// Démarrer la session et vérifier l'authentification
-$sessionService = SessionService::getInstance();
-if (!$sessionService->isLoggedIn()) {
+// Vérifier l'authentification directement
+if (!isset($_SESSION['brocanteur_id'])) {
     header('Location: connexion.php');
     exit();
 }
@@ -24,7 +22,7 @@ $action = $_GET['action'] ?? 'index';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
     <?php include 'inc/sidebar.inc.php'; ?>

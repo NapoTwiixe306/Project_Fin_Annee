@@ -419,3 +419,87 @@
     border-color: $color-dark;
   }
 }
+
+// === FORMULAIRES DE RÉINITIALISATION ===
+.reset-password-form {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: $spacing-8;
+  background: $color-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  
+  h1 {
+    text-align: center;
+    margin-bottom: $spacing-8;
+    color: $color-primary;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+  }
+  
+  .success-message,
+  .error-message {
+    text-align: center;
+    padding: $spacing-6;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-6;
+    
+    p {
+      margin-bottom: $spacing-4;
+      font-size: $font-size-base;
+      line-height: $line-height-relaxed;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  .success-message {
+    background: rgba($color-success, 0.1);
+    border: 0.0625rem solid rgba($color-success, 0.2);
+    color: $color-success-dark;
+  }
+  
+  .error-message {
+    background: rgba($color-danger, 0.1);
+    border: 0.0625rem solid rgba($color-danger, 0.2);
+    color: $color-danger-dark;
+  }
+  
+  .form-links {
+    text-align: center;
+    margin-top: $spacing-6;
+    padding-top: $spacing-6;
+    border-top: 0.0625rem solid $color-light;
+    
+    p {
+      margin-bottom: $spacing-3;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      a {
+        color: $color-primary;
+        text-decoration: none;
+        font-weight: $font-weight-medium;
+        @include transition();
+        
+        &:hover {
+          color: $color-primary-dark;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  
+  @include mobile-only {
+    margin: $spacing-4;
+    padding: $spacing-6;
+    
+    h1 {
+      font-size: $font-size-xl;
+    }
+  }
+}

@@ -107,7 +107,3 @@ $objets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 <?php endif; ?>
-
-<style>
-    
-</style>

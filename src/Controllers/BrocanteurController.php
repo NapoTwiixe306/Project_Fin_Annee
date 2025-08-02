@@ -307,4 +307,124 @@ class BrocanteurController
         
         return null;
     }
+
+    /**
+     * Demande de réinitialisation de mot de passe
+     */
+    public function requestPasswordReset(): array
+    {
+        $errors = [];
+        $success = false;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim($_POST['email'] ?? '');
+
+            if (empty($email)) {
+                $errors[] = "L'adresse email est requise.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Format d'email invalide.";
+            } else {
+                // Vérifier si l'email existe
+                $user = $this->brocanteurModel->getByEmail($email);
+                
+                if (!$user) {
+                    // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
+                    $success = true;
+                } else {
+                    // Générer un token de réinitialisation
+                    $token = bin2hex(random_bytes(32));
+                    $expiresAt = date('Y-m-d H:i:s', strtotime('+' . RESET_TOKEN_EXPIRY_HOURS . ' hour'));
+                    
+                    if ($this->brocanteurModel->createResetToken($user['id'], $token, $expiresAt)) {
+                        // Envoyer l'email
+                        $resetLink = APP_URL . "/reset_password_confirm.php?token=" . $token;
+                        $this->sendResetEmail($email, $user['nom'], $user['prenom'], $resetLink);
+                        $success = true;
+                    } else {
+                        $errors[] = "Erreur lors de la génération du lien de réinitialisation.";
+                    }
+                }
+            }
+        }
+
+        return [
+            'success' => $success,
+            'errors' => $errors
+        ];
+    }
+
+    /**
+     * Réinitialisation du mot de passe avec token
+     */
+    public function resetPassword(string $token): array
+    {
+        $errors = [];
+        $success = false;
+        $tokenValid = false;
+
+        // Vérifier si le token est valide
+        $resetData = $this->brocanteurModel->getResetToken($token);
+        
+        if (!$resetData) {
+            return [
+                'success' => false,
+                'errors' => [],
+                'token_valid' => false
+            ];
+        }
+
+        $tokenValid = true;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $password = $_POST['password'] ?? '';
+            $confirmPassword = $_POST['confirm_password'] ?? '';
+
+            // Validation
+            if (empty($password)) {
+                $errors[] = "Le mot de passe est requis.";
+            } elseif (strlen($password) < 8) {
+                $errors[] = "Le mot de passe doit contenir au moins 8 caractères.";
+            } elseif ($password !== $confirmPassword) {
+                $errors[] = "Les mots de passe ne correspondent pas.";
+            } else {
+                // Mettre à jour le mot de passe
+                if ($this->brocanteurModel->updatePassword($resetData['brocanteur_id'], $password)) {
+                    // Supprimer le token utilisé
+                    $this->brocanteurModel->deleteResetToken($token);
+                    $success = true;
+                } else {
+                    $errors[] = "Erreur lors de la réinitialisation du mot de passe.";
+                }
+            }
+        }
+
+        return [
+            'success' => $success,
+            'errors' => $errors,
+            'token_valid' => $tokenValid
+        ];
+    }
+
+    /**
+     * Envoie l'email de réinitialisation
+     */
+    private function sendResetEmail(string $email, string $nom, string $prenom, string $resetLink): bool
+    {
+        $subject = "[Supra Brocante] Réinitialisation de votre mot de passe";
+        
+        $emailContent = "Bonjour $prenom $nom,\n\n";
+        $emailContent .= "Vous avez demandé la réinitialisation de votre mot de passe pour votre compte Supra Brocante.\n\n";
+        $emailContent .= "Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :\n";
+        $emailContent .= "$resetLink\n\n";
+        $emailContent .= "Ce lien expirera dans " . RESET_TOKEN_EXPIRY_HOURS . " heure(s).\n\n";
+        $emailContent .= "Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.\n\n";
+        $emailContent .= "Cordialement,\nL'équipe Supra Brocante";
+
+        // Headers pour l'email (même système que contact.php)
+        $headers = "From: noreply@suprabrocante.be\r\n";
+        $headers .= "Reply-To: noreply@suprabrocante.be\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+        return mail($email, $subject, $emailContent, $headers);
+    }
 }

@@ -7,7 +7,7 @@ class CookieService
     private static $instance = null;
     private $defaultOptions = [
         'expires' => 0,
-        'path' => '/',
+        'path' => '/Project_Fin_Annee/',
         'domain' => '',
         'secure' => false,
         'httponly' => true,

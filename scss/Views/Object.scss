@@ -1,42 +1,244 @@
 @import '../Base/variables.scss';
-main{
+
+main {
   .modal {
     display: none;
-    position: fixed; /* Toujours centré par rapport au viewport */
-    top: -30px;
+    position: fixed;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.8);
     justify-content: center;
     align-items: center;
-}
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+  }
 
-.modal:target {
-    display: flex; /* Affiche et centre */
-}
+  .modal:target {
+    display: flex;
+    animation: fadeIn 0.3s ease-out;
+  }
 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
-.modal-content {
+  .modal-content {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-content {
     background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
+    padding: 0;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
     overflow-y: auto;
     position: relative;
-}
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+  }
 
-.modal .close {
-    display: inline-block;
-    margin-top: 1rem;
+  .modal-header {
+    padding: 2rem 2rem 1rem 2rem;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, $primary-color, darken($primary-color, 10%));
     color: white;
-    background: #333;
-    padding: 0.5rem 1rem;
+    border-radius: 15px 15px 0 0;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  .modal-body {
+    padding: 2rem;
+    flex: 1;
+  }
+
+  .objet-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .objet-image {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .objet-photo {
+    max-width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .objet-photo:hover {
+    transform: scale(1.02);
+  }
+
+  .objet-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid $primary-color;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #333;
+    min-width: 100px;
+  }
+
+  .detail-value {
+    color: #666;
+  }
+
+  .objet-description {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid $primary-color;
+    margin-top: 1rem;
+  }
+
+  .objet-description h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+
+  .objet-description p {
+    margin: 0;
+    line-height: 1.6;
+    color: #555;
+  }
+
+  .modal-footer {
+    padding: 1rem 2rem 2rem 2rem;
+    text-align: center;
+    border-top: 1px solid #eee;
+  }
+
+  .modal .close {
+    display: inline-block;
+    color: white;
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    padding: 0.75rem 2rem;
     text-decoration: none;
-    border-radius: 5px;
-}
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  }
+
+  .modal .close:hover {
+    background: linear-gradient(135deg, #c82333, #bd2130);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .modal {
+      padding: 10px;
+    }
+
+    .modal-content {
+      max-height: 95vh;
+      border-radius: 10px;
+    }
+
+    .modal-header {
+      padding: 1.5rem 1.5rem 1rem 1.5rem;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .modal-header h2 {
+      font-size: 1.5rem;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .objet-info {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .detail-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .detail-label {
+      min-width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .modal {
+      padding: 5px;
+    }
+
+    .modal-content {
+      max-height: 98vh;
+    }
+
+    .modal-header {
+      padding: 1rem 1rem 0.75rem 1rem;
+    }
+
+    .modal-header h2 {
+      font-size: 1.3rem;
+    }
+
+    .modal-body {
+      padding: 1rem;
+    }
+
+    .objet-description {
+      padding: 1rem;
+    }
+  }
   /* .card_brocanteurs{
     .card{
       border: 2px solid lightgray;

@@ -15,7 +15,7 @@ class Brocanteur
     }
 
     /**
-     * Récupère tous les brocanteurs avec leurs emplacements
+     * Récupère tous les brocanteurs visibles avec leurs emplacements
      */
     public function getAll(): array
     {
@@ -23,6 +23,7 @@ class Brocanteur
                        e.numero AS emplacement, e.zone
                 FROM brocanteurs b
                 LEFT JOIN emplacements e ON b.emplacement_id = e.id
+                WHERE b.visible = TRUE
                 ORDER BY b.nom, b.prenom";
         
         $stmt = $this->pdo->prepare($sql);
@@ -32,14 +33,14 @@ class Brocanteur
     }
 
     /**
-     * Recherche des brocanteurs avec filtres
+     * Recherche des brocanteurs visibles avec filtres
      */
     public function search(string $search = '', string $filterBy = 'name', string $zone = ''): array
     {
         $sql = "SELECT b.id, b.nom, b.prenom, b.photo_profil, e.numero AS emplacement, e.zone, b.description
                 FROM brocanteurs b
                 JOIN emplacements e ON b.emplacement_id = e.id
-                WHERE 1=1";
+                WHERE b.visible = TRUE";
 
         $params = [];
 
@@ -68,14 +69,14 @@ class Brocanteur
     }
 
     /**
-     * Récupère un brocanteur par ID
+     * Récupère un brocanteur visible par ID
      */
     public function getById(int $id): ?array
     {
         $sql = "SELECT b.*, e.numero AS emplacement, e.zone
                 FROM brocanteurs b
                 LEFT JOIN emplacements e ON b.emplacement_id = e.id
-                WHERE b.id = :id";
+                WHERE b.id = :id AND b.visible = TRUE";
         
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -178,7 +179,7 @@ class Brocanteur
      */
     public function getObjectsByBrocanteur(int $brocanteurId): array
     {
-        $sql = "SELECT o.titre, o.description, o.photo_objet, c.nom as categorie
+        $sql = "SELECT o.id, o.titre, o.description, o.photo_objet, c.nom as categorie
                 FROM objets o
                 LEFT JOIN categories c ON o.categorie_id = c.id
                 WHERE o.brocanteur_id = :brocanteur_id ORDER BY o.titre";
@@ -189,4 +190,87 @@ class Brocanteur
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Crée un token de réinitialisation de mot de passe
+     */
+    public function createResetToken(int $brocanteurId, string $token, string $expiresAt): bool
+    {
+        // Supprimer les anciens tokens pour ce brocanteur
+        $this->deleteResetTokensByBrocanteur($brocanteurId);
+        
+        $sql = "INSERT INTO reset_tokens (brocanteur_id, token, expires_at) VALUES (:brocanteur_id, :token, :expires_at)";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        return $stmt->execute([
+            'brocanteur_id' => $brocanteurId,
+            'token' => $token,
+            'expires_at' => $expiresAt
+        ]);
+    }
+
+    /**
+     * Récupère un token de réinitialisation
+     */
+    public function getResetToken(string $token): ?array
+    {
+        $sql = "SELECT * FROM reset_tokens WHERE token = :token AND expires_at > NOW()";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['token' => $token]);
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    /**
+     * Supprime un token de réinitialisation
+     */
+    public function deleteResetToken(string $token): bool
+    {
+        $sql = "DELETE FROM reset_tokens WHERE token = :token";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        return $stmt->execute(['token' => $token]);
+    }
+
+    /**
+     * Supprime tous les tokens d'un brocanteur
+     */
+    public function deleteResetTokensByBrocanteur(int $brocanteurId): bool
+    {
+        $sql = "DELETE FROM reset_tokens WHERE brocanteur_id = :brocanteur_id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        return $stmt->execute(['brocanteur_id' => $brocanteurId]);
+    }
+
+    /**
+     * Met à jour le mot de passe d'un brocanteur
+     */
+    public function updatePassword(int $brocanteurId, string $password): bool
+    {
+        $sql = "UPDATE brocanteurs SET password_hash = :password_hash WHERE id = :id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        return $stmt->execute([
+            'id' => $brocanteurId,
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT)
+        ]);
+    }
+
+    /**
+     * Nettoie les tokens expirés
+     */
+    public function cleanExpiredTokens(): int
+    {
+        $sql = "DELETE FROM reset_tokens WHERE expires_at < NOW()";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        
+        return $stmt->rowCount();
+    }
 }

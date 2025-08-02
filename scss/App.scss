@@ -13,9 +13,11 @@
 /*Views Folder*/
 @import './Views/home';
 @import './Views/brocanteurs.scss';
+@import './Views/brocanteur-details.scss';
 @import './Views/contact.scss';
 @import './Views/Object.scss';
 
 @import './Views/Dashboard/object.inc.scss';
 @import './Views/Dashboard/displayObject.scss';
 @import './Components/mes-objets';
+@import './Views/login';

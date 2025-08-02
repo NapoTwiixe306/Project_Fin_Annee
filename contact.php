@@ -26,66 +26,89 @@ $formData = [
 ];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $adminEmail = "j.milants@student.helmo.be";
-    $nom = trim($_POST["nom"] ?? '');
-    $prenom = trim($_POST["prenom"] ?? '');
-    $email = trim($_POST["email"] ?? '');
-    $sujet = trim($_POST["sujet"] ?? '');
-    $message = trim($_POST["message"] ?? '');
-
-    // Preserve form data
-    $formData = [
-        'nom' => $nom,
-        'prenom' => $prenom,
-        'email' => $email,
-        'sujet' => $sujet,
-        'message' => $message
-    ];
-
-    // Validation
-    if (empty($nom)) {
-        $errors[] = "Le nom est obligatoire.";
-    }
-    if (empty($prenom)) {
-        $errors[] = "Le prénom est obligatoire.";
-    }
-    if (empty($email)) {
-        $errors[] = "L'adresse email est obligatoire.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Format d'adresse email invalide.";
-    }
-    if (empty($sujet)) {
-        $errors[] = "Le sujet est obligatoire.";
-    }
-    if (empty($message)) {
-        $errors[] = "Le message est obligatoire.";
-    }
-
-    // If no errors, send email
-    if (empty($errors)) {
-        $emailSubject = "[Supra Brocante] $sujet";
-        $emailContent = "Message reçu de : $prenom $nom <$email>\n\n";
-        $emailContent .= "Sujet: $sujet\n\n";
-        $emailContent .= "Message:\n$message";
-
-        // Headers for admin email
-        $headers = "From: $email\r\n";
-        $headers .= "Reply-To: $email\r\n";
-        $headers .= "Cc: $email\r\n"; // Copy to sender
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-
-        // Send email (will work on production server)
-        if (mail($adminEmail, $emailSubject, $emailContent, $headers)) {
-            $success = true;
-            $formData = [ // Reset form on success
-                'nom' => '',
-                'prenom' => '',
-                'email' => $userEmail,
-                'sujet' => '',
-                'message' => ''
-            ];
+    // Protection anti-spam : vérifier le champ honeypot
+    if (!empty($_POST['website'])) {
+        // Si le champ honeypot est rempli, c'est probablement un bot
+        $errors[] = "Erreur de validation. Veuillez réessayer.";
+    } else {
+        // Protection anti-spam : vérifier le temps minimum entre soumissions
+        $lastSubmission = $_SESSION['last_contact_submission'] ?? 0;
+        $currentTime = time();
+        $minInterval = 30; // 30 secondes minimum entre soumissions
+        
+        if ($currentTime - $lastSubmission < $minInterval) {
+            $errors[] = "Veuillez attendre quelques secondes avant de renvoyer un message.";
         } else {
-            $errors[] = "Erreur lors de l'envoi du message. Veuillez réessayer plus tard.";
+            // Récupérer l'email de l'admin depuis la base de données
+            require_once 'bdd.php';
+            $stmt = $pdo->prepare("SELECT email FROM brocanteurs WHERE role = 'admin' LIMIT 1");
+            $stmt->execute();
+            $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+            $adminEmail = $admin ? $admin['email'] : "j.milants@student.helmo.be"; // Fallback
+            
+            $nom = trim($_POST["nom"] ?? '');
+            $prenom = trim($_POST["prenom"] ?? '');
+            $email = trim($_POST["email"] ?? '');
+            $sujet = trim($_POST["sujet"] ?? '');
+            $message = trim($_POST["message"] ?? '');
+
+            // Preserve form data
+            $formData = [
+                'nom' => $nom,
+                'prenom' => $prenom,
+                'email' => $email,
+                'sujet' => $sujet,
+                'message' => $message
+            ];
+
+            // Validation
+            if (empty($nom)) {
+                $errors[] = "Le nom est obligatoire.";
+            }
+            if (empty($prenom)) {
+                $errors[] = "Le prénom est obligatoire.";
+            }
+            if (empty($email)) {
+                $errors[] = "L'adresse email est obligatoire.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Format d'adresse email invalide.";
+            }
+            if (empty($sujet)) {
+                $errors[] = "Le sujet est obligatoire.";
+            }
+            if (empty($message)) {
+                $errors[] = "Le message est obligatoire.";
+            }
+
+            // If no errors, send email
+            if (empty($errors)) {
+                $emailSubject = "[Supra Brocante] $sujet";
+                $emailContent = "Message reçu de : $prenom $nom <$email>\n\n";
+                $emailContent .= "Sujet: $sujet\n\n";
+                $emailContent .= "Message:\n$message";
+
+                // Headers for admin email
+                $headers = "From: $email\r\n";
+                $headers .= "Reply-To: $email\r\n";
+                $headers .= "Cc: $email\r\n"; // Copy to sender
+                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+                // Send email (will work on production server)
+                if (mail($adminEmail, $emailSubject, $emailContent, $headers)) {
+                    $success = true;
+                    // Enregistrer le temps de soumission pour la protection anti-spam
+                    $_SESSION['last_contact_submission'] = $currentTime;
+                    $formData = [ // Reset form on success
+                        'nom' => '',
+                        'prenom' => '',
+                        'email' => $userEmail,
+                        'sujet' => '',
+                        'message' => ''
+                    ];
+                } else {
+                    $errors[] = "Erreur lors de l'envoi du message. Veuillez réessayer plus tard.";
+                }
+            }
         }
     }
 }
@@ -125,6 +148,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <?php endif; ?>
 
                 <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"])?>" class="column">
+                    <!-- Champ honeypot caché pour la protection anti-spam -->
+                    <div style="display: none;">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+                    
                     <label for="nom">Nom * :</label>
                     <input type="text" name="nom" id="nom" value="<?= htmlspecialchars($formData['nom']) ?>" required>
 

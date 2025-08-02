@@ -1,0 +1,514 @@
+// Variables spécifiques à la page de connexion
+$login-bg-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$login-card-bg: rgba(255, 255, 255, 0.95);
+$login-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.1);
+$login-border-radius: 1rem;
+$login-input-border: #e1e5e9;
+$login-input-focus: #667eea;
+$login-btn-primary: #667eea;
+$login-btn-hover: #5a6fd8;
+$login-text-primary: #2d3748;
+$login-text-secondary: #718096;
+$login-error-color: #e53e3e;
+$login-success-color: #38a169;
+
+// Mixins pour la page de connexion
+@mixin login-card {
+  background: $login-card-bg;
+  backdrop-filter: blur(0.625rem);
+  border-radius: $login-border-radius;
+  box-shadow: $login-shadow;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 25rem;
+  margin: 0 auto;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.2);
+}
+
+@mixin login-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 0.125rem solid $login-input-border;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  
+  &:focus {
+    outline: none;
+    border-color: $login-input-focus;
+    box-shadow: 0 0 0 0.1875rem rgba(102, 126, 234, 0.1);
+    background: white;
+  }
+  
+  &::placeholder {
+    color: $login-text-secondary;
+    opacity: 0.7;
+  }
+}
+
+@mixin login-button {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, $login-btn-primary 0%, $login-btn-hover 100%);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.625rem 1.5625rem rgba(102, 126, 234, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+}
+
+// Styles principaux pour la page de connexion
+.login-page {
+  min-height: 100vh;
+  background: $login-bg-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  
+  // Effet de particules en arrière-plan
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="60" cy="10" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="90" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+    animation: float 20s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-1.25rem) rotate(180deg); }
+  }
+}
+
+.login-container {
+  @include login-card;
+  position: relative;
+  z-index: 1;
+  
+  // Animation d'entrée
+  animation: slideInUp 0.6s ease-out;
+  
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(1.875rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  .login-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $login-text-primary;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, $login-btn-primary, $login-btn-hover);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .login-subtitle {
+    color: $login-text-secondary;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.login-form {
+  .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: $login-text-primary;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    
+    .form-input {
+      @include login-input;
+      
+      &.email-input {
+        padding-left: 3rem;
+      }
+      
+      &.password-input {
+        padding-left: 3rem;
+      }
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $login-text-secondary;
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+  }
+  
+  .login-button {
+    @include login-button;
+    margin-top: 1rem;
+  }
+}
+
+.login-errors {
+  margin-bottom: 1.5rem;
+  
+  .error-message {
+    background: rgba($login-error-color, 0.1);
+    border: 0.0625rem solid rgba($login-error-color, 0.2);
+    color: $login-error-color;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: '⚠️';
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+.login-links {
+  margin-top: 2rem;
+  text-align: center;
+  
+  .login-link {
+    display: block;
+    color: $login-text-secondary;
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+    
+    &:hover {
+      color: $login-btn-primary;
+      text-decoration: underline;
+    }
+    
+    &.forgot-password {
+      color: $login-btn-primary;
+      font-weight: 500;
+      
+      &:hover {
+        color: $login-btn-hover;
+      }
+    }
+    
+    &.register-link {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba($login-btn-primary, 0.1);
+      border: 0.0625rem solid rgba($login-btn-primary, 0.2);
+      border-radius: 0.5rem;
+      color: $login-btn-primary;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba($login-btn-primary, 0.2);
+        border-color: rgba($login-btn-primary, 0.3);
+        transform: translateY(-0.0625rem);
+      }
+    }
+  }
+}
+
+.login-divider {
+  margin: 1.5rem 0;
+  text-align: center;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 0.0625rem;
+    background: $login-input-border;
+  }
+  
+  .divider-text {
+    background: $login-card-bg;
+    padding: 0 1rem;
+    color: $login-text-secondary;
+    font-size: 0.8rem;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// Responsive design
+@media (max-width: 48rem) { // 768px
+  .login-page {
+    padding: 0.5rem;
+  }
+  
+  .login-container {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+  
+  .login-header {
+    .login-title {
+      font-size: 1.75rem;
+    }
+  }
+  
+  .login-form {
+    .form-group {
+      margin-bottom: 1.25rem;
+      
+      .form-input {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 30rem) { // 480px
+  .login-container {
+    padding: 1.5rem 1rem;
+    border-radius: 0.75rem;
+  }
+  
+  .login-header {
+    .login-title {
+      font-size: 1.5rem;
+    }
+    
+    .login-subtitle {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .login-form {
+    .form-group {
+      .form-input {
+        padding: 0.75rem 0.875rem;
+        font-size: 1rem;
+      }
+    }
+    
+    .login-button {
+      padding: 0.875rem 1.25rem;
+      font-size: 1rem;
+    }
+  }
+  
+  .login-links {
+    .login-link {
+      font-size: 0.85rem;
+      
+      &.register-link {
+        padding: 0.625rem 1.25rem;
+      }
+    }
+  }
+}
+
+// Améliorations d'accessibilité
+.login-form {
+  .form-input:focus {
+    outline: 0.125rem solid $login-input-focus;
+    outline-offset: 0.125rem;
+  }
+  
+  .login-button:focus {
+    outline: 0.125rem solid white;
+    outline-offset: 0.125rem;
+  }
+}
+
+// Mode sombre (optionnel)
+@media (prefers-color-scheme: dark) {
+  .login-page {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  }
+  
+  .login-container {
+    background: rgba(45, 55, 72, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .login-header {
+    .login-title {
+      color: white;
+    }
+    
+    .login-subtitle {
+      color: #a0aec0;
+    }
+  }
+  
+  .login-form {
+    .form-group {
+      .form-label {
+        color: #e2e8f0;
+      }
+      
+      .form-input {
+        background: rgba(45, 55, 72, 0.8);
+        border-color: #4a5568;
+        color: white;
+        
+        &:focus {
+          background: rgba(45, 55, 72, 1);
+          border-color: $login-input-focus;
+        }
+        
+        &::placeholder {
+          color: #a0aec0;
+        }
+      }
+    }
+  }
+  
+  .login-links {
+    .login-link {
+      color: #a0aec0;
+      
+      &:hover {
+        color: #90cdf4;
+      }
+    }
+  }
+}
+
+// États de focus améliorés pour l'accessibilité
+.login-form {
+  .form-input:focus-visible {
+    outline: 0.125rem solid $login-input-focus;
+    outline-offset: 0.125rem;
+  }
+  
+  .login-button:focus-visible {
+    outline: 0.125rem solid white;
+    outline-offset: 0.125rem;
+  }
+}
+
+// Amélioration de la lisibilité sur petits écrans
+@media (max-width: 20rem) { // 320px
+  .login-container {
+    padding: 1rem 0.75rem;
+    margin: 0.5rem;
+  }
+  
+  .login-header {
+    .login-title {
+      font-size: 1.25rem;
+    }
+    
+    .login-subtitle {
+      font-size: 0.8rem;
+    }
+  }
+  
+  .login-form {
+    .form-group {
+      .form-input {
+        padding: 0.625rem 0.75rem;
+        font-size: 1rem;
+      }
+    }
+    
+    .login-button {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Support pour les écrans haute densité
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .login-container {
+    border-width: 0.03125rem;
+  }
+  
+  .login-form {
+    .form-input {
+      border-width: 0.0625rem;
+    }
+  }
+}
+
+// Amélioration pour les utilisateurs préférant moins d'animations
+@media (prefers-reduced-motion: reduce) {
+  .login-page {
+    &::before {
+      animation: none;
+    }
+  }
+  
+  .login-container {
+    animation: none;
+  }
+  
+  .login-form {
+    .form-input,
+    .login-button {
+      transition: none;
+    }
+  }
+  
+  .login-links {
+    .login-link {
+      transition: none;
+    }
+  }
+} 

@@ -84,21 +84,23 @@ $brocanteur = $data['brocanteur'];
                     <div class="objects-grid">
                         <?php foreach ($brocanteur['objects'] as $object): ?>
                             <div class="object-card">
-                                <div class="object-image">
-                                    <?php
-                                    $objectPhoto = !empty($object['photo_objet']) && file_exists($object['photo_objet'])
-                                        ? $object['photo_objet']
-                                        : 'https://placehold.co/300x200?text=Aucune+image';
-                                    ?>
-                                    <img src="<?= htmlspecialchars($objectPhoto) ?>" alt="<?= htmlspecialchars($object['titre']) ?>" class="object-img">
-                                </div>
-                                <div class="object-info">
-                                    <h3><?= htmlspecialchars($object['titre']) ?></h3>
-                                    <p class="object-description"><?= htmlspecialchars(substr($object['description'], 0, 100)) ?><?= strlen($object['description']) > 100 ? '...' : '' ?></p>
-                                    <?php if (!empty($object['categorie'])): ?>
-                                        <span class="category-badge"><?= htmlspecialchars($object['categorie']) ?></span>
-                                    <?php endif; ?>
-                                </div>
+                                <a href="objet.php?id=<?= $object['id'] ?>" class="object-link">
+                                    <div class="object-image">
+                                        <?php
+                                        $objectPhoto = !empty($object['photo_objet']) && file_exists($object['photo_objet'])
+                                            ? $object['photo_objet']
+                                            : 'https://placehold.co/300x200?text=Aucune+image';
+                                        ?>
+                                        <img src="<?= htmlspecialchars($objectPhoto) ?>" alt="<?= htmlspecialchars($object['titre']) ?>" class="object-img">
+                                    </div>
+                                    <div class="object-info">
+                                        <h3><?= htmlspecialchars($object['titre']) ?></h3>
+                                        <p class="object-description"><?= htmlspecialchars(substr($object['description'], 0, 100)) ?><?= strlen($object['description']) > 100 ? '...' : '' ?></p>
+                                        <?php if (!empty($object['categorie'])): ?>
+                                            <span class="category-badge"><?= htmlspecialchars($object['categorie']) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </a>
                             </div>
                         <?php endforeach; ?>
                     </div>

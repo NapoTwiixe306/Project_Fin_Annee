@@ -42,7 +42,7 @@ class ObjetController
 
         // Récupération des données
         $objets = $this->objetModel->search($search, $filter);
-        $categories = $this->categorieModel->getAll();
+        $categories = $this->categorieModel->getUsedByBrocanteursWithEmplacement();
 
         return [
             'objets' => $objets,
